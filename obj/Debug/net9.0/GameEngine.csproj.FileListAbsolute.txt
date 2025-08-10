@@ -1,0 +1,82 @@
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/GameEngine
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/GameEngine.deps.json
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/GameEngine.runtimeconfig.json
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/GameEngine.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/GameEngine.pdb
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.GeneratedMSBuildEditorConfig.editorconfig
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.AssemblyInfoInputs.cache
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.AssemblyInfo.cs
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.csproj.CoreCompileInputs.cache
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.dll
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/refint/GameEngine.dll
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.pdb
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.genruntimeconfig.cache
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/ref/GameEngine.dll
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.csproj.AssemblyReference.cache
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Audio.OpenAL.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Compute.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Core.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Graphics.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Input.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Mathematics.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Windowing.Common.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Windowing.Desktop.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/OpenTK.Windowing.GraphicsLibraryFramework.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/runtimes/linux-x64/native/libglfw.so.3
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/runtimes/osx-arm64/native/libglfw.3.dylib
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/runtimes/osx-x64/native/libglfw.3.dylib
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/glfw3.dll
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/runtimes/win-x86/native/glfw3.dll
+/Users/osmankaradas/Game Engine/GameEngine/obj/Debug/net9.0/GameEngine.csproj.Up2Date
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/Shaders/Default.frag
+/Users/osmankaradas/Game Engine/GameEngine/bin/Debug/net9.0/Shaders/Default.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/Default.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/Default.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/GameEngine
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/GameEngine.deps.json
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/GameEngine.runtimeconfig.json
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/GameEngine.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/GameEngine.pdb
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Audio.OpenAL.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Compute.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Core.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Graphics.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Input.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Mathematics.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Windowing.Common.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Windowing.Desktop.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/OpenTK.Windowing.GraphicsLibraryFramework.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-x64/native/libglfw.so.3
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/osx-arm64/native/libglfw.3.dylib
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/osx-x64/native/libglfw.3.dylib
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/glfw3.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x86/native/glfw3.dll
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.csproj.AssemblyReference.cache
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.GeneratedMSBuildEditorConfig.editorconfig
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.AssemblyInfoInputs.cache
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.AssemblyInfo.cs
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.csproj.CoreCompileInputs.cache
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.csproj.Up2Date
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.dll
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/refint/GameEngine.dll
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.pdb
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.genruntimeconfig.cache
+/Users/osmankaradas/GameEngine/obj/Debug/net9.0/ref/GameEngine.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/StbImageSharp.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/FreeTypeSharp.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-x64/native/libfreetype.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/osx/native/libfreetype.dylib
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/freetype.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/freetype.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x86/native/freetype.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/JoltPhysicsSharp.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-arm/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-arm64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-x64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-arm64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-x64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/osx/native/libjoltc.dylib
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/joltc.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/joltc_double.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/joltc.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/joltc_double.dll
