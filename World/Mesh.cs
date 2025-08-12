@@ -2,19 +2,20 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using static OpenTK.Graphics.OpenGL4.GL;
+using SharpGLTF.Schema2;
 
 namespace GameEngine.World
 {
+
     public class Mesh
     {
         public MeshData meshData;
 
         public Buffers buffers;
 
-        public Mesh(List<Vector3> vertices, List<Vector2> uv, List<uint> indices)
+        public Mesh(string filePath)
         {
-            meshData = new MeshData(vertices, indices, uv);
-
+            this.meshData = LoadGltfModel(filePath);
             buffers = new Buffers(meshData);
         }
 
@@ -37,7 +38,7 @@ namespace GameEngine.World
             buffers.vao.Bind();
             buffers.ibo.Bind();
 
-            DrawElements(PrimitiveType.Triangles, meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
+            DrawElements(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
 
             buffers.vao.Unbind();
             buffers.ibo.Unbind();
@@ -260,6 +261,55 @@ namespace GameEngine.World
             );
 
             return meshData;
+        }
+
+        public MeshData LoadGltfModel(string filePath)
+        {
+            // Load the model
+            var model = ModelRoot.Load(filePath);
+
+            var vertices = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var indices = new List<uint>();
+
+            // Usually a model has scenes -> nodes -> meshes -> primitives
+            // We'll grab the first mesh of the first node for simplicity
+            var mesh = model.LogicalMeshes[0];  // or loop if you want all
+
+            foreach (var prim in mesh.Primitives)
+            {
+                var positionAccessor = prim.GetVertexAccessor("POSITION");
+                var texCoordAccessor = prim.GetVertexAccessor("TEXCOORD_0");
+
+                // Extract vertices
+                foreach (var pos in positionAccessor.AsVector3Array())
+                {
+                    vertices.Add(new Vector3(pos.X, pos.Y, pos.Z));
+                }
+
+                // Extract UVs
+                if (texCoordAccessor != null)
+                {
+                    foreach (var uv in texCoordAccessor.AsVector2Array())
+                    {
+                        uvs.Add(new Vector2(uv.X, uv.Y));
+                    }
+                }
+                else
+                {
+                    // If no UVs, fill with zeros
+                    for (int i = 0; i < positionAccessor.Count; i++)
+                        uvs.Add(Vector2.Zero);
+                }
+
+                // Extract indices
+                foreach (var idx in prim.GetIndices())
+                {
+                    indices.Add((uint)idx);
+                }
+            }
+
+            return new MeshData(vertices, indices, uvs);
         }
     }
 }

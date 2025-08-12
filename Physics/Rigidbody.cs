@@ -2,61 +2,64 @@ using OpenTK.Mathematics;
 using GameEngine.World;
 using System.Collections.Generic;
 
-public class Rigidbody
+namespace GameEngine.Physics
 {
-    public GameObject owner;
-    public Vector3 velocity;
-    public float mass = 1f;
-    public bool isStatic = false;
-    public bool collided;
-    private readonly Vector3 gravityForce = new Vector3(0, -9.81f, 0);
-    private Vector4 initialColor;
-
-    public Rigidbody(GameObject owner, bool isStatic)
+    /*public class Rigidbody
     {
-        this.owner = owner;
-        this.isStatic = isStatic;
-        velocity = Vector3.Zero;
-        initialColor = owner.color;
-    }
+        public GameObject owner;
+        public Vector3 velocity;
+        public float mass = 1f;
+        public bool isStatic = false;
+        public bool collided;
+        private readonly Vector3 gravityForce = new Vector3(0, -9.81f, 0);
+        private Vector4 initialColor;
 
-    public void Update(float deltaTime, List<GameObject> others)
-    {
-        owner.UpdateBounds();
-        if (isStatic) return;
-
-        // Apply gravity
-        velocity += gravityForce / mass * deltaTime;
-
-        // Apply velocity
-        owner.position += velocity * deltaTime;
-
-        CheckCollision(GameObject.gameObjects);
-    }
-
-    private bool CheckCollision(List<GameObject> others)
-    {
-        foreach (var other in others)
+        public Rigidbody(GameObject owner, bool isStatic)
         {
-            if (other == owner) continue;
-
-            if (SAT.CheckOBBCollision(owner.obbBounds, other.obbBounds, out Vector3 mtv))
-            {
-                collided = true;
-                owner.position -= mtv;
-
-                Vector3 mtvNormal = mtv.Normalized();
-                float velAlongNormal = Vector3.Dot(velocity, mtvNormal);
-                if (velAlongNormal > 0)
-                    velocity -= velAlongNormal * mtvNormal;
-
-                if (!other.rigidbody.isStatic)
-                    owner.color = new Vector4(1f, 0f, 0f, 1f);
-                return true;
-            }
-            owner.color = initialColor;
+            this.owner = owner;
+            this.isStatic = isStatic;
+            velocity = Vector3.Zero;
+            initialColor = owner.color;
         }
-        collided = false;
-        return false;
-    }
+
+        public void Update(float deltaTime, List<GameObject> others)
+        {
+            //owner.UpdateBounds();
+            if (isStatic) return;
+
+            // Apply gravity
+            velocity += gravityForce / mass * deltaTime;
+
+            // Apply velocity
+            owner.position += velocity * deltaTime;
+
+            CheckCollision(GameObject.gameObjects);
+        }
+
+        private bool CheckCollision(List<GameObject> others)
+        {
+            foreach (var other in others)
+            {
+                if (other == owner) continue;
+
+                if (SAT.CheckOBBCollision(owner.obbBounds, other.obbBounds, out Vector3 mtv))
+                {
+                    collided = true;
+                    owner.position -= mtv;
+
+                    Vector3 mtvNormal = mtv.Normalized();
+                    float velAlongNormal = Vector3.Dot(velocity, mtvNormal);
+                    if (velAlongNormal > 0)
+                        velocity -= velAlongNormal * mtvNormal;
+
+                    if (!other.rigidbody.isStatic)
+                        owner.color = new Vector4(1f, 0f, 0f, 1f);
+                    return true;
+                }
+                owner.color = initialColor;
+            }
+            collided = false;
+            return false;
+        }
+    }*/
 }

@@ -8,8 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BepuPhysics" Version="2.4.0" />
     <PackageReference Include="FreeTypeSharp" Version="3.0.1" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
+    <PackageReference Include="SharpGLTF.Core" Version="1.0.5" />
     <PackageReference Include="StbImageSharp" Version="2.30.15" />
   </ItemGroup>
 
@@ -25,7 +27,6 @@
   <ItemGroup>
     <Folder Include="Shaders\" /> 
     <Folder Include="World\" />   
-    <Folder Include="World1\" />
   </ItemGroup>
   
 </Project>

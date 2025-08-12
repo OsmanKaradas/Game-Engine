@@ -9,17 +9,22 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Mathematics;
 using static OpenTK.Graphics.OpenGL4.GL;
 using GameEngine.World;
+using BepuPhysics;
+using BepuPhysics.Collidables;
+using BepuPhysics.CollisionDetection;
+using BepuUtilities.Memory;
 
 namespace GameEngine
 {
     internal class Game : GameWindow
     {
         ShaderProgram program;
-
+        Simulation simulation;
+        BufferPool bufferPool;
         // camera
         Camera camera;
         GameObject player;
-        Mesh cubeMesh;
+        World.Mesh cubeMesh;
         public float speed = 10f;
         private float velocity;
 
@@ -52,24 +57,32 @@ namespace GameEngine
         {
             base.OnLoad();
 
+            bufferPool = new BufferPool();
+            simulation = Simulation.Create(bufferPool, new BepuPhysicsSetup.NarrowPhaseCallbacks(), new BepuPhysicsSetup.PoseIntegratorCallbacks(), new SolveDescription(8, 1));
             program = new ShaderProgram("Default.vert", "Default.frag");
             Enable(EnableCap.DepthTest);
             camera = new Camera(width, height, Vector3.Zero);
 
-            cubeMesh = new Mesh(World.Type.Cube);
+            cubeMesh = new World.Mesh(World.Type.Cube);
 
-            player = new GameObject(cubeMesh, new Vector3(-2.25f, 3f, -5f), new Vector4(0f, 1f, 0f, 1f), false);
+            World.Mesh gunMesh = new World.Mesh("Models/gun.glb");
+            World.Mesh testDummyMesh = new World.Mesh("Models/test_dummy.glb");
 
-            Mesh sphereMesh = new Mesh(World.Type.Sphere);
-            GameObject sphere = new GameObject(sphereMesh, new Vector3(-6f, 3f, -5f), new Vector4(1f, 1f, 0f, 1f), false);
+            GameObject gun = new GameObject(gunMesh, new Vector3(6f, 0f, -5f), new Vector4(1f, 1f, 0.5f, 1f), false, simulation);
+            GameObject testDummy = new GameObject(testDummyMesh, new Vector3(9f, 0f, -5f), new Vector4(1f, 1f, 0.5f, 1f), false, simulation);
+            testDummy.scale *= 0.5f;
+            player = new GameObject(cubeMesh, new Vector3(-2.25f, 3f, -5f), new Vector4(0f, 1f, 0f, 1f), false, simulation);
 
-            GameObject cube = new GameObject(cubeMesh, new Vector3(-3f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), false);
-            GameObject cube1 = new GameObject(cubeMesh, new Vector3(0f, 0f, -5f), new Vector4(0f, 0.5f, 1f, 1f), false);
-            GameObject cube2 = new GameObject(cubeMesh, new Vector3(3f, 0f, -5f), new Vector4(0f, 1f, 1f, 1f), false);
-            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, -0f), new Vector4(0.75f, 0.75f, 0.75f, 1f), true);
+            World.Mesh sphereMesh = new World.Mesh(World.Type.Sphere);
+            GameObject sphere = new GameObject(sphereMesh, new Vector3(-6f, 3f, -5f), new Vector4(1f, 1f, 0f, 1f), false, simulation);
+
+            GameObject cube = new GameObject(cubeMesh, new Vector3(-3f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), false, simulation);
+            GameObject cube1 = new GameObject(cubeMesh, new Vector3(0f, 0f, -5f), new Vector4(0f, 0.5f, 1f, 1f), false, simulation);
+            GameObject cube2 = new GameObject(cubeMesh, new Vector3(3f, 0f, -5f), new Vector4(0f, 1f, 1f, 1f), false, simulation);
+            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, -0f), new Vector4(0.75f, 0.75f, 0.75f, 1f), true, simulation);
             ground.tag = "Ground";
             ground.scale = new Vector3(50f, 0.5f, 50f);
-            
+
             CursorState = CursorState.Grabbed;
         }
 
@@ -83,7 +96,8 @@ namespace GameEngine
                 obj.mesh.buffers.ibo.Delete();
                 obj.mesh.buffers.vbo.Delete();
             }
-
+            simulation.Dispose();
+            bufferPool.Clear();
             program.Delete();
         }
 
@@ -104,7 +118,7 @@ namespace GameEngine
 
             int viewLocation = GetUniformLocation(program.ID, "view");
             int projectionLocation = GetUniformLocation(program.ID, "projection");
-            
+
             UniformMatrix4(viewLocation, true, ref view);
             UniformMatrix4(projectionLocation, true, ref projection);
 
@@ -112,7 +126,7 @@ namespace GameEngine
             {
                 obj.Render(program);
             }
-            
+
             SwapBuffers();
             base.OnRenderFrame(args);
         }
@@ -124,6 +138,7 @@ namespace GameEngine
             base.OnUpdateFrame(args);
 
             Time.Update(args.Time);
+            simulation.Timestep((float)args.Time);
 
             Vector3 inputVel = Vector3.Zero;
             if (!camera.cameraMode)
@@ -137,13 +152,14 @@ namespace GameEngine
                 if (input.IsKeyDown(Keys.D)) inputVel.X += moveSpeed;
 
                 // keep Y velocity from rigidbody (gravity/jump)
-                player.rigidbody.velocity.X = inputVel.X;
-                player.rigidbody.velocity.Z = inputVel.Z;
+                //player.rigidbody.velocity.X = inputVel.X;
+                //player.rigidbody.velocity.Z = inputVel.Z;
             }
 
             foreach (GameObject obj in GameObject.gameObjects)
             {
-                obj.rigidbody.Update(Time.deltaTime, GameObject.gameObjects);
+                //obj.rigidbody.Update(Time.deltaTime, GameObject.gameObjects);
+                obj.Update();
             }
 
             if (input.IsKeyPressed(Keys.F))

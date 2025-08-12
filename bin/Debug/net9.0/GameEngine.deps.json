@@ -8,12 +8,33 @@
     ".NETCoreApp,Version=v9.0": {
       "GameEngine/1.0.0": {
         "dependencies": {
+          "BepuPhysics": "2.4.0",
           "FreeTypeSharp": "3.0.1",
           "OpenTK": "4.9.4",
+          "SharpGLTF.Core": "1.0.5",
           "StbImageSharp": "2.30.15"
         },
         "runtime": {
           "GameEngine.dll": {}
+        }
+      },
+      "BepuPhysics/2.4.0": {
+        "dependencies": {
+          "BepuUtilities": "2.4.0"
+        },
+        "runtime": {
+          "lib/net6.0/BepuPhysics.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
+        }
+      },
+      "BepuUtilities/2.4.0": {
+        "runtime": {
+          "lib/net6.0/BepuUtilities.dll": {
+            "assemblyVersion": "2.4.0.0",
+            "fileVersion": "2.4.0.0"
+          }
         }
       },
       "FreeTypeSharp/3.0.1": {
@@ -190,6 +211,14 @@
           }
         }
       },
+      "SharpGLTF.Core/1.0.5": {
+        "runtime": {
+          "lib/net8.0/SharpGLTF.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "StbImageSharp/2.30.15": {
         "runtime": {
           "lib/netstandard2.0/StbImageSharp.dll": {
@@ -206,6 +235,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "BepuPhysics/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ck/BJgSQrBqYrj0T9jGljDdHNILBP5kTPTylc7N/hCzR1XJJc7p6ORzwtjTfjgoYkkdajvLHxEQv6BRC8kaysQ==",
+      "path": "bepuphysics/2.4.0",
+      "hashPath": "bepuphysics.2.4.0.nupkg.sha512"
+    },
+    "BepuUtilities/2.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KNMxkzKLHAvV7jRtErxs3rPv71fHToqo/WN96HlT6iomWuwL97tohEbt0B1WA8A6sO5t6PP+qF08d4T9A8k2uA==",
+      "path": "bepuutilities/2.4.0",
+      "hashPath": "bepuutilities.2.4.0.nupkg.sha512"
     },
     "FreeTypeSharp/3.0.1": {
       "type": "package",
@@ -290,6 +333,13 @@
       "sha512": "sha512-wNlxnPrD7veMV8EGTTi/sCDeg5V8w/18vC0aw0Ao69eNneD7YSq9Ad+C389rVA957eHNR6Xieu/5qzHQeEOyxQ==",
       "path": "opentk.windowing.graphicslibraryframework/4.9.4",
       "hashPath": "opentk.windowing.graphicslibraryframework.4.9.4.nupkg.sha512"
+    },
+    "SharpGLTF.Core/1.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HNHKPqaHXm7R1nlXZ764K5UI02IeDOQ5DQKLjwYUVNTsSW27jJpw+wLGQx6ZFoiFYqUlyZjmsu+WfEak2GmJAg==",
+      "path": "sharpgltf.core/1.0.5",
+      "hashPath": "sharpgltf.core.1.0.5.nupkg.sha512"
     },
     "StbImageSharp/2.30.15": {
       "type": "package",
