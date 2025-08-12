@@ -40,10 +40,15 @@ public class Rigidbody
         {
             if (other == owner) continue;
 
-            if (SAT.OBBvsOBB(owner.obbBounds, other.obbBounds))
+            if (SAT.CheckOBBCollision(owner.obbBounds, other.obbBounds, out Vector3 mtv))
             {
                 collided = true;
-                velocity = Vector3.Zero;
+                owner.position -= mtv;
+
+                Vector3 mtvNormal = mtv.Normalized();
+                float velAlongNormal = Vector3.Dot(velocity, mtvNormal);
+                if (velAlongNormal > 0)
+                    velocity -= velAlongNormal * mtvNormal;
 
                 if (!other.rigidbody.isStatic)
                     owner.color = new Vector4(1f, 0f, 0f, 1f);

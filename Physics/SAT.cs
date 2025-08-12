@@ -27,62 +27,80 @@ public static class SAT
     // Projects an OBB onto an axis and returns the radius of that projection
     private static float ProjectOBB(OBB obb, Vector3 axis)
     {
-        return
-            obb.halfSize.X * MathF.Abs(Vector3.Dot(axis, obb.axes[0])) +
+        float projection =
+            obb.halfSize.X* MathF.Abs(Vector3.Dot(axis, obb.axes[0])) +
             obb.halfSize.Y * MathF.Abs(Vector3.Dot(axis, obb.axes[1])) +
             obb.halfSize.Z * MathF.Abs(Vector3.Dot(axis, obb.axes[2]));
+            
+        return projection;
     }
 
     // Tests if two OBBs collide using SAT.
     // Returns true if collision detected.
-    public static bool OBBvsOBB(OBB a, OBB b)
+    public static bool CheckOBBCollision(OBB a, OBB b, out Vector3 mtv)
     {
+        mtv = Vector3.Zero;
+        float minOverlap = float.MaxValue;
+        Vector3 smallestAxis = Vector3.Zero;
+
+        // 15 potential separating axes for two OBBs:
+        Vector3[] axes = new Vector3[15];
+        axes[0] = a.axes[0];
+        axes[1] = a.axes[1];
+        axes[2] = a.axes[2];
+        axes[3] = b.axes[0];
+        axes[4] = b.axes[1];
+        axes[5] = b.axes[2];
+
+        // Cross products of axes
+        int index = 6;
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                axes[index++] = Vector3.Cross(a.axes[i], b.axes[j]);
+
         // Vector between centers
         Vector3 t = b.center - a.center;
 
-        // The 15 axes to test
-        Vector3[] testAxes = new Vector3[15];
-
-        // 3 axes from A
-        testAxes[0] = a.axes[0];
-        testAxes[1] = a.axes[1];
-        testAxes[2] = a.axes[2];
-
-        // 3 axes from B
-        testAxes[3] = b.axes[0];
-        testAxes[4] = b.axes[1];
-        testAxes[5] = b.axes[2];
-
-        // 9 cross product axes
-        int idx = 5;
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 15; i++)
         {
-            for (int j = 0; j < 3; j++)
+            Vector3 axis = axes[i];
+
+            // If axis is near zero vector, skip (can't normalize zero vector)
+            if (axis.LengthSquared < 1e-6f)
+                continue;
+
+            axis = axis.Normalized();
+
+            // Project both OBBs onto axis
+            float aProj = ProjectOBB(a, axis);
+            float bProj = ProjectOBB(b, axis);
+
+            // Distance between projections
+            float distance = Math.Abs(Vector3.Dot(t, axis));
+
+            // Calculate overlap
+            float overlap = aProj + bProj - distance;
+
+            // If no overlap, separation axis found -> no collision
+            if (overlap <= 0)
+                return false;
+
+            // Track smallest overlap axis
+            if (overlap < minOverlap)
             {
-                Vector3 axis = Vector3.Cross(a.axes[i], b.axes[j]);
-                if (axis.LengthSquared > EPSILON)
-                    testAxes[++idx] = axis.Normalized();
-                else
-                    testAxes[++idx] = Vector3.Zero; // Ignore near-zero vectors
+                minOverlap = overlap;
+                smallestAxis = axis;
             }
         }
 
-        // Check all axes for separation
-        foreach (var axis in testAxes)
-        {
-            if (axis == Vector3.Zero)
-                continue;
+        // Minimum Translation Vector points from A to B along smallest axis
+        Vector3 direction = b.center - a.center;
+        if (Vector3.Dot(direction, smallestAxis) < 0)
+            smallestAxis = -smallestAxis;
 
-            float rA = ProjectOBB(a, axis);
-            float rB = ProjectOBB(b, axis);
+        mtv = smallestAxis * minOverlap;
 
-            float dist = MathF.Abs(Vector3.Dot(t, axis));
-
-            if (dist > rA + rB)
-                return false; // Separating axis found — no collision
-        }
-
-        return true; // No separating axis found — collision detected
+        return true;
     }
 }
 
