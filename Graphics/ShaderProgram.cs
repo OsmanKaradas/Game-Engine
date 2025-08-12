@@ -66,6 +66,17 @@ namespace GameEngine
                 return "";
             }
         }
+
+        public void SetVector4(string name, Vector4 value)
+        {
+            int location = GetUniformLocation(ID, name);
+            Uniform4(location, value);
+        }
+        public void SetBool(string name, bool value)
+        {
+            int location = GetUniformLocation(ID, name);
+            Uniform1(location, value ? 1 : 0);
+        }
     }
 }
 

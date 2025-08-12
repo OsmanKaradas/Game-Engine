@@ -9,21 +9,19 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Mathematics;
 using static OpenTK.Graphics.OpenGL4.GL;
 using GameEngine.World;
-using JoltPhysicsSharp;
 
 namespace GameEngine
 {
     internal class Game : GameWindow
     {
-        // Jolt Physics
-        PhysicsSystem physicsSystem;
-        JobSystem jobSystem;
-        PhysicsSystemSettings settings;
         ShaderProgram program;
-        Texture texture;
-        
+
         // camera
         Camera camera;
+        GameObject player;
+        Mesh cubeMesh;
+        public float speed = 10f;
+        private float velocity;
 
         // transformation
         float yRot = 0f;
@@ -54,36 +52,23 @@ namespace GameEngine
         {
             base.OnLoad();
 
-            Foundation.Init();
-            jobSystem = new JobSystemThreadPool();
-            settings = new PhysicsSystemSettings();            
-            physicsSystem = new PhysicsSystem(settings);
-
-            Mesh cubeMesh = new Mesh(World.Type.Cube);
-
-            GameObject cube = new GameObject(cubeMesh, new Vector3(-3f, 0f, -5f), new Vector3(1f, 0f, 0f));
-            GameObject cube1 = new GameObject(cubeMesh, new Vector3(0f, 0f, -5f), new Vector3(1f, 0.5f, 0f));
-            GameObject cube2 = new GameObject(cubeMesh, new Vector3(3f, 0f, -5f), new Vector3(1f,1f, 0f));
-            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, -0f), new Vector3(0f, 0.25f, 1f));
-            ground.scale = new Vector3(50f, 0.5f, 50f);
-            BodyInterface bodyInterface = physicsSystem.BodyInterface;
-            var boxShape = new BoxShape(new System.Numerics.Vector3(10f, 10f, 10f), 0.1f);
-            var bodySettings = new BodyCreationSettings(
-                boxShape,
-                new System.Numerics.Vector3(0f, -3f, 0f),
-                System.Numerics.Quaternion.Identity,
-                MotionType.Dynamic,
-                new ObjectLayer(0)
-            );
-            Body body = bodyInterface.CreateBody(bodySettings);
-            bodyInterface.AddBody(body, Activation.Activate);
-
             program = new ShaderProgram("Default.vert", "Default.frag");
-
-            texture = new Texture("dirtTexture.JPG");
             Enable(EnableCap.DepthTest);
-
             camera = new Camera(width, height, Vector3.Zero);
+            
+            player = new GameObject(cubeMesh, new Vector3(-2.25f, 3f, -5f), new Vector4(0f, 1f, 0f, 1f), false);
+
+            Mesh sphereMesh = new Mesh(World.Type.Sphere);
+            GameObject sphere = new GameObject(sphereMesh, new Vector3(0f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), true, "dirtTexture.jpg");
+
+            cubeMesh = new Mesh(World.Type.Cube);
+            //GameObject cube = new GameObject(cubeMesh, new Vector3(-3f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), false);
+            GameObject cube1 = new GameObject(cubeMesh, new Vector3(0f, 0f, -5f), new Vector4(0f, 0.5f, 1f, 1f), false);
+            GameObject cube2 = new GameObject(cubeMesh, new Vector3(3f, 0f, -5f), new Vector4(0f, 1f, 1f, 1f), false);
+            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, -0f), new Vector4(0.75f, 0.75f, 0.75f, 1f), true);
+            ground.tag = "Ground";
+            ground.scale = new Vector3(50f, 0.5f, 50f);
+            
             CursorState = CursorState.Grabbed;
         }
 
@@ -93,68 +78,40 @@ namespace GameEngine
             foreach (GameObject obj in GameObject.gameObjects)
             {
                 Console.WriteLine(obj);
-                obj.mesh.vao.Delete();
-                obj.mesh.ibo.Delete();
-                obj.mesh.vbo.Delete();
+                obj.mesh.buffers.vao.Delete();
+                obj.mesh.buffers.ibo.Delete();
+                obj.mesh.buffers.vbo.Delete();
             }
 
-            texture.Delete();
             program.Delete();
-            Foundation.Shutdown();
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             fps = MathF.Round(1f / (float)args.Time);
+            Console.WriteLine(fps);
 
             ClearColor(Color4.White);
             Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             program.Bind();
-            texture.Bind();
-
 
             Matrix4 view = camera.GetViewMatrix();
             Matrix4 projection = camera.GetProjectionMatrix();
 
             yRot += 0.001f;
 
-            Matrix4 translation = Matrix4.CreateTranslation(0f, 0f, -3f);
-
             int viewLocation = GetUniformLocation(program.ID, "view");
             int projectionLocation = GetUniformLocation(program.ID, "projection");
-
+            
             UniformMatrix4(viewLocation, true, ref view);
             UniformMatrix4(projectionLocation, true, ref projection);
 
             foreach (GameObject obj in GameObject.gameObjects)
             {
-                if (obj != GameObject.gameObjects[3])
-                {
-                    obj.rotation = new Vector3(yRot, 0f, 0f);
-                }
                 obj.Render(program);
             }
-
-            /*for (int y = 0; y < 10; y++)
-            {
-                for (int x = 0; x < 10; x++)
-                {
-                    foreach (GameObject obj in GameObject.gameObjects)
-                    {
-                        obj.position += new Vector3(x * 0.00001f);
-                        obj.Render(program);
-                    }
-                }
-                foreach (GameObject obj in GameObject.gameObjects)
-                {
-                    obj.position += new Vector3(y * 0.00001f, 0f, 0f);
-                    obj.Render(program);
-                }
-            }*/
-
-            // Console.WriteLine(fps);
-
+            
             SwapBuffers();
             base.OnRenderFrame(args);
         }
@@ -163,30 +120,58 @@ namespace GameEngine
         {
             MouseState mouse = MouseState;
             KeyboardState input = KeyboardState;
-
             base.OnUpdateFrame(args);
 
-            physicsSystem.Update((float)args.Time, 1, jobSystem);
+            Time.Update(args.Time);
+
+            Vector3 inputVel = Vector3.Zero;
+            if (!camera.cameraMode)
+            {
+                float moveSpeed = speed;
+                if (input.IsKeyDown(Keys.LeftShift)) moveSpeed *= 2.5f;
+
+                if (input.IsKeyDown(Keys.W)) inputVel.Z -= moveSpeed;
+                if (input.IsKeyDown(Keys.S)) inputVel.Z += moveSpeed;
+                if (input.IsKeyDown(Keys.A)) inputVel.X -= moveSpeed;
+                if (input.IsKeyDown(Keys.D)) inputVel.X += moveSpeed;
+
+                // keep Y velocity from rigidbody (gravity/jump)
+                player.rigidbody.velocity.X = inputVel.X;
+                player.rigidbody.velocity.Z = inputVel.Z;
+            }
+
+            foreach (GameObject obj in GameObject.gameObjects)
+            {
+                obj.rigidbody.Update(Time.deltaTime, GameObject.gameObjects);
+            }
+
+            if (input.IsKeyPressed(Keys.F))
+            {
+                camera.cameraMode = !camera.cameraMode;
+            }
+
             camera.Update(input, mouse, args);
 
             // show cursor
-            if (input.IsKeyDown(Keys.Escape))
+            if (input.IsKeyPressed(Keys.Escape))
             {
                 Close();
             }
         }
     }
 }
+            
+            
             /* Stairway
-                for (int y = 0; y < 10; y++)
+            for (int y = 0; y < 10; y++)
+            {
+                for (int x = 0; x < 10; x++)
                 {
-                    for (int x = 0; x < 10; x++)
-                    {
-                        translation = Matrix4.CreateTranslation(x, 3f, y);
-                        model *= translation;
-                        UniformMatrix4(modelLocation, true, ref model);
-                        DrawElements(PrimitiveType.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
-                    }
-                    translation = Matrix4.CreateTranslation(y, 0f, 0f);
+                    translation = Matrix4.CreateTranslation(x, 3f, y);
                     model *= translation;
-                }*/
+                    UniformMatrix4(modelLocation, true, ref model);
+                    DrawElements(PrimitiveType.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
+                }
+                translation = Matrix4.CreateTranslation(y, 0f, 0f);
+                model *= translation;
+            }*/

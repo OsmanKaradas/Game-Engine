@@ -9,6 +9,32 @@ namespace GameEngine.World
         Sphere,
         Pyramid
     }
+    public class Buffers
+    {
+        public VAO vao;
+        public VBO vbo;
+        public VBO vboUV;
+        public IBO ibo;
+
+        public Buffers(MeshData meshData)
+        {
+            // Setup
+
+            vao = new VAO();
+
+            // Vertex VBO
+            vbo = new VBO(meshData.Vertices);
+            vao.LinkToVAO(0, 3, vbo);
+
+            // UV VBO
+            vboUV = new VBO(meshData.UV);
+            vao.LinkToVAO(1, 2, vboUV);
+
+            ibo = new IBO(meshData.Indices);
+
+            vao.Unbind();
+        }
+    }
 
     public class MeshData
     {

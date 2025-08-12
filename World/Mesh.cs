@@ -9,16 +9,13 @@ namespace GameEngine.World
     {
         public MeshData meshData;
 
-        public VAO vao;
-        public VBO vbo;
-        public VBO vboUV;
-        public IBO ibo;
+        public Buffers buffers;
 
         public Mesh(List<Vector3> vertices, List<Vector2> uv, List<uint> indices)
         {
             meshData = new MeshData(vertices, indices, uv);
 
-            SetupBuffers();
+            buffers = new Buffers(meshData);
         }
 
         public Mesh(Type type)
@@ -27,45 +24,29 @@ namespace GameEngine.World
             {
                 Type.Plane => Plane(),
                 Type.Cube => Cube(),
+                Type.Sphere => Sphere(1f, 32, 16),
                 Type.Pyramid => Pyramid(),
                 _ => throw new ArgumentException("Unknown mesh type")
             };
 
-            SetupBuffers();
-        }
-
-        private void SetupBuffers()
-        {
-            vao = new VAO();
-
-            // Vertex VBO
-            vbo = new VBO(meshData.Vertices);
-            vao.LinkToVAO(0, 3, vbo);
-
-            // UV VBO
-            vboUV = new VBO(meshData.UV);
-            vao.LinkToVAO(1, 2, vboUV);
-
-            ibo = new IBO(meshData.Indices);
-
-            vao.Unbind();
+            buffers = new Buffers(meshData);
         }
 
         public void Render()
         {
-            vao.Bind();
-            ibo.Bind();
+            buffers.vao.Bind();
+            buffers.ibo.Bind();
 
             DrawElements(PrimitiveType.Triangles, meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
 
-            vao.Unbind();
-            ibo.Unbind();
+            buffers.vao.Unbind();
+            buffers.ibo.Unbind();
         }
 
         private MeshData Plane()
         {
             MeshData meshData = new MeshData(
-                //Vertices
+                // Vertices
                 new List<Vector3>
                 {
                     new Vector3(-0.5f, 0f, 0.5f), // front left
@@ -74,14 +55,14 @@ namespace GameEngine.World
                     new Vector3(-0.5f, 0f, -0.5f), // back left 
                 },
 
-                //Indices
+                // Indices
                 new List<uint>
                 {
                     0, 1, 2,
                     0, 3, 2
                 },
 
-                //UV
+                // UV
                 new List<Vector2>
                 {
                     new Vector2(0f, 1f),
@@ -97,7 +78,7 @@ namespace GameEngine.World
         private MeshData Cube()
         {
             MeshData meshData = new MeshData(
-                //Vertices
+                // Vertices
                 new List<Vector3>
                 {
                     // front face
@@ -138,7 +119,7 @@ namespace GameEngine.World
                     new Vector3(-0.5f, -0.5f, -0.5f) // bottom left
                 },
 
-                //Indices
+                // Indices
                 new List<uint>
                 {
                     0, 1, 2,
@@ -160,7 +141,7 @@ namespace GameEngine.World
                     22, 23, 20
                 },
 
-                //UV
+                // UV
                 new List<Vector2>
                 {
                     new Vector2(0f, 1f),
@@ -198,10 +179,55 @@ namespace GameEngine.World
             return meshData;
         }
 
+        public static MeshData Sphere(float radius, int segments, int rings)
+        {
+            var vertices = new List<Vector3>();
+            var uv = new List<Vector2>();
+            var indices = new List<uint>();
+
+            for (int y = 0; y <= rings; y++)
+            {
+                float v = (float)y / rings;
+                float theta1 = v * MathF.PI;
+
+                for (int x = 0; x <= segments; x++)
+                {
+                    float u = (float)x / segments;
+                    float theta2 = u * MathF.PI * 2f;
+
+                    float xPos = radius * MathF.Sin(theta1) * MathF.Cos(theta2);
+                    float yPos = radius * MathF.Cos(theta1);
+                    float zPos = radius * MathF.Sin(theta1) * MathF.Sin(theta2);
+
+                    vertices.Add(new Vector3(xPos, yPos, zPos));
+                    uv.Add(new Vector2(u, v));
+                }
+            }
+
+            for (int y = 0; y < rings; y++)
+            {
+                for (int x = 0; x < segments; x++)
+                {
+                    int first = y * (segments + 1) + x;
+                    int second = first + segments + 1;
+
+                    indices.Add((uint)first);
+                    indices.Add((uint)second);
+                    indices.Add((uint)(first + 1));
+
+                    indices.Add((uint)(first + 1));
+                    indices.Add((uint)second);
+                    indices.Add((uint)(second + 1));
+                }
+            }
+
+            return new MeshData(vertices, indices, uv);
+        }
+
         private MeshData Pyramid()
         {
             MeshData meshData = new MeshData(
-                //Vertices
+                // Vertices
                 new List<Vector3>
                 {
                     new Vector3(0f, 0.5f, 0f), // top
@@ -211,7 +237,7 @@ namespace GameEngine.World
                     new Vector3(-0.5f, 0f, -0.5f) // back left
                 },
 
-                //Indices
+                // Indices
                 new List<uint>
                 {
                     0, 1, 2,
@@ -222,7 +248,7 @@ namespace GameEngine.World
                     1, 3, 4
                 },
 
-                //UV
+                // UV
                 new List<Vector2>
                 {
                     new Vector2(0.5f, 1f),  // top - 0

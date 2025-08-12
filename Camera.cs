@@ -9,6 +9,7 @@ namespace GameEngine
 {
     internal class Camera
     {
+        public bool cameraMode = true;
         private float SPEED = 8f;
         private float SCREENWIDTH;
         private float SCREENHEIGHT;
@@ -63,38 +64,41 @@ namespace GameEngine
             float deltaTime = (float)e.Time;
             float velocity = SPEED * deltaTime;
 
-            // Sprinting
-            if (input.IsKeyDown(Keys.LeftShift))
+            if (cameraMode)
             {
-                velocity *= 7.5f;
-            }
+                // Sprinting
+                if (input.IsKeyDown(Keys.LeftShift))
+                {
+                    velocity *= 7.5f;
+                }
 
-            if (input.IsKeyDown(Keys.W))
-            {
-                position += front * velocity;
-            }
-            if (input.IsKeyDown(Keys.A))
-            {
-                position -= right * velocity;
-            }
-            if (input.IsKeyDown(Keys.S))
-            {
+                if (input.IsKeyDown(Keys.W))
+                {
+                    position += front * velocity;
+                }
+                if (input.IsKeyDown(Keys.A))
+                {
+                    position -= right * velocity;
+                }
+                if (input.IsKeyDown(Keys.S))
+                {
 
-                position -= front * velocity;
-            }
-            if (input.IsKeyDown(Keys.D))
-            {
-                position += right * velocity;
-            }
+                    position -= front * velocity;
+                }
+                if (input.IsKeyDown(Keys.D))
+                {
+                    position += right * velocity;
+                }
 
-            if (input.IsKeyDown(Keys.Space))
-            {
-                position.Y += velocity;
-            }
+                if (input.IsKeyDown(Keys.Space))
+                {
+                    position.Y += velocity;
+                }
 
-            if (input.IsKeyDown(Keys.LeftControl))
-            {
-                position.Y -= velocity;
+                if (input.IsKeyDown(Keys.X))
+                {
+                    position.Y -= velocity;
+                }
             }
 
             yaw += mouse.Delta.X * SENSITIVITY;

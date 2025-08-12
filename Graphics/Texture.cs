@@ -23,9 +23,9 @@ namespace GameEngine
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 
             StbImage.stbi_set_flip_vertically_on_load(1);
-            ImageResult dirtTexture = ImageResult.FromStream(File.OpenRead("Textures/" + filePath), ColorComponents.RedGreenBlueAlpha);
+            ImageResult texture = ImageResult.FromStream(File.OpenRead("Textures/" + filePath), ColorComponents.RedGreenBlueAlpha);
 
-            TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, dirtTexture.Width, dirtTexture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, dirtTexture.Data);
+            TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, texture.Width, texture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, texture.Data);
 
             Unbind();
         }

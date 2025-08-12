@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "WE95rBvYeKI=",
+  "dgSpecHash": "GsAvkFwzXrE=",
   "success": true,
   "projectFilePath": "/Users/osmankaradas/GameEngine/GameEngine.csproj",
   "expectedPackageFiles": [
     "/Users/osmankaradas/.nuget/packages/freetypesharp/3.0.1/freetypesharp.3.0.1.nupkg.sha512",
-    "/Users/osmankaradas/.nuget/packages/joltphysicssharp/2.17.5/joltphysicssharp.2.17.5.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/opentk/4.9.4/opentk.4.9.4.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/opentk.audio.openal/4.9.4/opentk.audio.openal.4.9.4.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/opentk.compute/4.9.4/opentk.compute.4.9.4.nupkg.sha512",
