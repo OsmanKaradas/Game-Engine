@@ -24,7 +24,7 @@ namespace GameEngine.World
             {
                 Type.Plane => Plane(),
                 Type.Cube => Cube(),
-                Type.Sphere => Sphere(1f, 32, 16),
+                Type.Sphere => Sphere(0.7f, 32, 16),
                 Type.Pyramid => Pyramid(),
                 _ => throw new ArgumentException("Unknown mesh type")
             };
@@ -179,7 +179,7 @@ namespace GameEngine.World
             return meshData;
         }
 
-        public static MeshData Sphere(float radius, int segments, int rings)
+        private MeshData Sphere(float radius, int segments, int rings)
         {
             var vertices = new List<Vector3>();
             var uv = new List<Vector2>();

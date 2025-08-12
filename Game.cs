@@ -55,14 +55,15 @@ namespace GameEngine
             program = new ShaderProgram("Default.vert", "Default.frag");
             Enable(EnableCap.DepthTest);
             camera = new Camera(width, height, Vector3.Zero);
-            
+
+            cubeMesh = new Mesh(World.Type.Cube);
+
             player = new GameObject(cubeMesh, new Vector3(-2.25f, 3f, -5f), new Vector4(0f, 1f, 0f, 1f), false);
 
             Mesh sphereMesh = new Mesh(World.Type.Sphere);
-            GameObject sphere = new GameObject(sphereMesh, new Vector3(0f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), true, "dirtTexture.jpg");
+            GameObject sphere = new GameObject(sphereMesh, new Vector3(-6f, 3f, -5f), new Vector4(1f, 1f, 0f, 1f), false);
 
-            cubeMesh = new Mesh(World.Type.Cube);
-            //GameObject cube = new GameObject(cubeMesh, new Vector3(-3f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), false);
+            GameObject cube = new GameObject(cubeMesh, new Vector3(-3f, 0f, -5f), new Vector4(0f, 0f, 1f, 1f), false);
             GameObject cube1 = new GameObject(cubeMesh, new Vector3(0f, 0f, -5f), new Vector4(0f, 0.5f, 1f, 1f), false);
             GameObject cube2 = new GameObject(cubeMesh, new Vector3(3f, 0f, -5f), new Vector4(0f, 1f, 1f, 1f), false);
             GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, -0f), new Vector4(0.75f, 0.75f, 0.75f, 1f), true);

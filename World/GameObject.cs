@@ -63,19 +63,19 @@ namespace GameEngine.World
         {
             Matrix4 model = GetModelMatrix();
 
-            /*shader.SetBool("useTexture", texture != null);
-            shader.SetVector4("objectColor", color);*/
+            shader.SetVector4("objectColor", color);
+            shader.SetBool("useTexture", texture != null);
 
-            int colorLocation = GetUniformLocation(shader.ID, "objectColor");
-            Uniform4(colorLocation, ref color);
+            /*int loc = GetUniformLocation(shader.ID, "objectColor");
+            Uniform4(loc, color);*/
 
-            /*if (texture != null)
+            if (texture != null)
             {
                 texture.Bind();
-            }*/
+            }
 
             UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
-
+            
             mesh.Render();
         }
 

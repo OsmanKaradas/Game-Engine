@@ -1,6 +1,6 @@
 #version 330 core
 
-in vec2 texCoord;
+in vec2 uv;
 
 out vec4 FragColor;
 
@@ -12,13 +12,13 @@ uniform bool useTexture;
 void main()
 {
     // FragColor = vec4(1.0, 0, 0, 1.0); // Red
-    /*if(useTexture)
+    if(useTexture)
     {
-        FragColor = texture(texture0, texCoord);
+        FragColor = texture(texture0, uv);
     }
     else
     {
-        FragColor = vec4(objectColor);
-    }*/
-    FragColor = objectColor;
+        FragColor = objectColor;
+    }
+    //FragColor = texture();
 }
