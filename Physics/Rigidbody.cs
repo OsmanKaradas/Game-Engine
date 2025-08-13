@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace GameEngine.Physics
 {
-    /*public class Rigidbody
+    public class Rigidbody
     {
         public GameObject owner;
         public Vector3 velocity;
@@ -24,7 +24,7 @@ namespace GameEngine.Physics
 
         public void Update(float deltaTime, List<GameObject> others)
         {
-            //owner.UpdateBounds();
+            owner.UpdateBounds();
             if (isStatic) return;
 
             // Apply gravity
@@ -61,5 +61,5 @@ namespace GameEngine.Physics
             collided = false;
             return false;
         }
-    }*/
+    }
 }

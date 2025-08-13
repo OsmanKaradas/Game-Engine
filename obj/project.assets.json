@@ -66,6 +66,57 @@
           }
         }
       },
+      "JoltPhysicsSharp/2.17.5": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/JoltPhysicsSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net9.0/JoltPhysicsSharp.dll": {}
+        },
+        "runtimeTargets": {
+          "runtimes/android-arm/native/libjoltc.so": {
+            "assetType": "native",
+            "rid": "android-arm"
+          },
+          "runtimes/android-arm64/native/libjoltc.so": {
+            "assetType": "native",
+            "rid": "android-arm64"
+          },
+          "runtimes/android-x64/native/libjoltc.so": {
+            "assetType": "native",
+            "rid": "android-x64"
+          },
+          "runtimes/linux-arm64/native/libjoltc.so": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-x64/native/libjoltc.so": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/osx/native/libjoltc.dylib": {
+            "assetType": "native",
+            "rid": "osx"
+          },
+          "runtimes/win-arm64/native/joltc.dll": {
+            "assetType": "native",
+            "rid": "win-arm64"
+          },
+          "runtimes/win-arm64/native/joltc_double.dll": {
+            "assetType": "native",
+            "rid": "win-arm64"
+          },
+          "runtimes/win-x64/native/joltc.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x64/native/joltc_double.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          }
+        }
+      },
       "OpenTK/4.9.4": {
         "type": "package",
         "dependencies": {
@@ -361,6 +412,30 @@
         "runtimes/win-x86/native/freetype.dll"
       ]
     },
+    "JoltPhysicsSharp/2.17.5": {
+      "sha512": "yxs1IJ6H+pIhg9F7kKJXwZ53+QcqEKqJ+eAivecBFRI5Tp9yA1/nt0caKsiHYHkXHuZ9GyUmgYis2QRdNRUn1g==",
+      "type": "package",
+      "path": "joltphysicssharp/2.17.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "joltphysicssharp.2.17.5.nupkg.sha512",
+        "joltphysicssharp.nuspec",
+        "lib/net8.0/JoltPhysicsSharp.dll",
+        "lib/net9.0/JoltPhysicsSharp.dll",
+        "runtimes/android-arm/native/libjoltc.so",
+        "runtimes/android-arm64/native/libjoltc.so",
+        "runtimes/android-x64/native/libjoltc.so",
+        "runtimes/linux-arm64/native/libjoltc.so",
+        "runtimes/linux-x64/native/libjoltc.so",
+        "runtimes/osx/native/libjoltc.dylib",
+        "runtimes/win-arm64/native/joltc.dll",
+        "runtimes/win-arm64/native/joltc_double.dll",
+        "runtimes/win-x64/native/joltc.dll",
+        "runtimes/win-x64/native/joltc_double.dll"
+      ]
+    },
     "OpenTK/4.9.4": {
       "sha512": "fp9ZI6akO4ZuIGzuUE0QRU5zRJhXbSXa5racehFoTdvodhRDecXCOcH68mRsZaMwnxLO9ECnf2LGM9BmiJKvhw==",
       "type": "package",
@@ -609,7 +684,8 @@
       "FreeTypeSharp >= 3.0.1",
       "OpenTK >= 4.9.4",
       "SharpGLTF.Core >= 1.0.5",
-      "StbImageSharp >= 2.30.15"
+      "StbImageSharp >= 2.30.15",
+      "joltphysicssharp >= 2.17.5"
     ]
   },
   "packageFolders": {
@@ -674,6 +750,10 @@
           "StbImageSharp": {
             "target": "Package",
             "version": "[2.30.15, )"
+          },
+          "joltphysicssharp": {
+            "target": "Package",
+            "version": "[2.17.5, )"
           }
         },
         "imports": [

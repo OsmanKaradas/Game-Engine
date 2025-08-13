@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
 using BepuPhysics;
 using GameEngine.Physics;
+using BepuPhysics.CollisionDetection;
 
 namespace GameEngine.World
 {
@@ -15,8 +16,9 @@ namespace GameEngine.World
 
         public Vector4 color;
         private Texture? texture;
-        //public Rigidbody rigidbody;
-        public BepuRigidbody bepuRigidbody;
+        public Rigidbody rigidbody;
+        //public BepuRigidbody bepuRigidbody;
+        public JoltRigidbody joltRigidbody;
         public OBB obbBounds;
         public Vector3 worldMin;
         public Vector3 worldMax;
@@ -24,15 +26,13 @@ namespace GameEngine.World
 
         public static List<GameObject> gameObjects = new();
 
-        public GameObject(Mesh mesh, Vector3 position, Vector4 color, bool isStatic, Simulation simulation, string texturePath = null)
+        public GameObject(Mesh mesh, Vector3 position, Vector4 color, bool isStatic, Vector3? scale = null, string texturePath = null)
         {
             this.mesh = mesh;
             this.position = position;
             this.color = color;
-            Quaternion.Multiply(rotation, 0f);
-
-            scale = Vector3.One;
-
+            this.rotation = Quaternion.Identity;
+            this.scale = scale ?? Vector3.One;
             if (!string.IsNullOrEmpty(texturePath))
             {
                 try
@@ -47,9 +47,10 @@ namespace GameEngine.World
 
             //rigidbody = new Rigidbody(this, isStatic);
 
-            //obbBounds = new OBB(position, scale / 2);
-            //UpdateBounds();
-            bepuRigidbody = new BepuRigidbody(simulation, this, new System.Numerics.Vector3(position.X, position.Y, position.Z), 1f * scale.Length, isStatic);
+            obbBounds = new OBB(position, this.scale / 2f);
+            UpdateBounds();
+            //this.bepuRigidbody = new BepuRigidbody(simulation, this, 1f * this.scale.Length, isStatic);
+            this.joltRigidbody = new JoltRigidbody(this, isStatic);
             gameObjects.Add(this);
         }
 
@@ -57,21 +58,16 @@ namespace GameEngine.World
         {
             return
                 Matrix4.CreateScale(scale) *
-                Matrix4.CreateRotationX(rotation.X) *
-                Matrix4.CreateRotationY(rotation.Y) *
-                Matrix4.CreateRotationZ(rotation.Z) *
+                Matrix4.CreateFromQuaternion(new Quaternion(rotation.X, rotation.Y, rotation.Z)) *
                 Matrix4.CreateTranslation(position);
         }
-
+        
         public void Render(ShaderProgram shader)
         {
             Matrix4 model = GetModelMatrix();
 
             shader.SetVector4("objectColor", color);
             shader.SetBool("useTexture", texture != null);
-
-            /*int loc = GetUniformLocation(shader.ID, "objectColor");
-            Uniform4(loc, color);*/
 
             if (texture != null)
             {
@@ -83,8 +79,9 @@ namespace GameEngine.World
             mesh.Render();
         }
 
-        /*public void UpdateBounds()
+        public void UpdateBounds()
         {
+            /*
             worldMin = position - obbBounds.halfSize;
             worldMax = position + obbBounds.halfSize;
 
@@ -97,12 +94,17 @@ namespace GameEngine.World
             obbBounds.axes[0] = Vector3.Transform(Vector3.UnitX, rotation).Normalized();
             obbBounds.axes[1] = Vector3.Transform(Vector3.UnitY, rotation).Normalized();
             obbBounds.axes[2] = Vector3.Transform(Vector3.UnitZ, rotation).Normalized();
-        }*/
+            */
+        }
 
         public void Update()
         {
-            position = bepuRigidbody.Position;
-            rotation = bepuRigidbody.Rotation;
+            /*if(!bepuRigidbody.isStatic)
+                position = bepuRigidbody.Position;
+                rotation = bepuRigidbody.Rotation;*/
+            if (!joltRigidbody.isStatic)
+                position = joltRigidbody.Position;
+                rotation = joltRigidbody.Rotation;
         }
     }
 }

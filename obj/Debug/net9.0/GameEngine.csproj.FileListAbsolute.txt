@@ -73,3 +73,14 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/SharpGLTF.Core.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/BepuPhysics.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/BepuUtilities.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/JoltPhysicsSharp.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-arm/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-arm64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-x64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-arm64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-x64/native/libjoltc.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/osx/native/libjoltc.dylib
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/joltc.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/joltc_double.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/joltc.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/joltc_double.dll

@@ -9,36 +9,29 @@ namespace GameEngine.Physics
     public class BepuRigidbody
     {
         private Simulation simulation;
-        private GameObject owner;
         public BodyHandle body;
-        public StaticHandle? staticBody;
+        public StaticHandle staticBody;
 
         public Box collider;
         public RigidPose pose;
         public BodyInertia mass;
 
-        public BodyVelocity velocity;
-
         public bool isStatic;
 
-        public BepuRigidbody(Simulation simulation, GameObject owner, System.Numerics.Vector3 position, float mass, bool isStatic)
+        public BepuRigidbody(Simulation simulation, GameObject owner, float mass, bool isStatic)
         {
-            this.owner = owner;
             this.simulation = simulation;
-            this.pose = new RigidPose(position);
-            this.collider = new Box(owner.scale.X * 0.5f, owner.scale.Y * 0.5f, owner.scale.Z * 0.5f);
+            pose = new RigidPose(
+                new System.Numerics.Vector3(owner.position.X, owner.position.Y, owner.position.Z),
+                new System.Numerics.Quaternion(owner.rotation.X, owner.rotation.Y, owner.rotation.Z, owner.rotation.W)
+                );
+            collider = new Box(owner.scale.X, owner.scale.Y, owner.scale.Z);
             this.mass = collider.ComputeInertia(mass);
-            velocity = new BodyVelocity();
             this.isStatic = isStatic;
 
-            InitializeBody();
-        }
-
-        private void InitializeBody()
-        {
             if (!isStatic)
             {
-                body = simulation.Bodies.Add(BodyDescription.CreateDynamic(pose, mass, simulation.Shapes.Add(collider), 0.01f));
+                body = simulation.Bodies.Add(BodyDescription.CreateDynamic(pose, this.mass, simulation.Shapes.Add(collider), 0.01f));
             }
             else
             {
@@ -50,7 +43,7 @@ namespace GameEngine.Physics
         {
             get
             {
-                return new Vector3(pose.Position.X, pose.Position.Y, pose.Position.Z);
+                return new Vector3(simulation.Bodies[body].Pose.Position.X, simulation.Bodies[body].Pose.Position.Y, simulation.Bodies[body].Pose.Position.Z);
             }
         }
 
@@ -58,7 +51,7 @@ namespace GameEngine.Physics
         {
             get
             {
-                return new Quaternion(pose.Orientation.X, pose.Orientation.Y, pose.Orientation.Z);
+                return new Quaternion(simulation.Bodies[body].Pose.Orientation.X, simulation.Bodies[body].Pose.Orientation.Y, simulation.Bodies[body].Pose.Orientation.Z);
             }
         } 
     }

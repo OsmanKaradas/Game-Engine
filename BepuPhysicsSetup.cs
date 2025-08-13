@@ -4,13 +4,9 @@ using BepuPhysics.CollisionDetection;
 using BepuPhysics.Constraints;
 using BepuUtilities;
 using BepuUtilities.Memory;
-using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-/// <summary>
-/// Shows a completely isolated usage of the engine without using any of the other demo physics-related types.
-/// </summary>
 public static class BepuPhysicsSetup
 {
     //The simulation has a variety of extension points that must be defined. 
@@ -215,7 +211,7 @@ public static class BepuPhysicsSetup
         //Drop a ball on a big static box.
         var sphere = new Sphere(1);
         var sphereInertia = sphere.ComputeInertia(1);
-        simulation.Bodies.Add(BodyDescription.CreateDynamic(new Vector3(0, 5, 0), sphereInertia, simulation.Shapes.Add(sphere), 0.01f));
+        BodyHandle sphereBody = simulation.Bodies.Add(BodyDescription.CreateDynamic(new Vector3(0, 5, 0), sphereInertia, simulation.Shapes.Add(sphere), 0.01f));
 
         simulation.Statics.Add(new StaticDescription(new Vector3(0, 0, 0), simulation.Shapes.Add(new Box(500, 1, 500))));
 
