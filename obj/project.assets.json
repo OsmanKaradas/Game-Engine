@@ -682,10 +682,10 @@
     "net9.0": [
       "BepuPhysics >= 2.4.0",
       "FreeTypeSharp >= 3.0.1",
+      "JoltPhysicsSharp >= 2.17.5",
       "OpenTK >= 4.9.4",
       "SharpGLTF.Core >= 1.0.5",
-      "StbImageSharp >= 2.30.15",
-      "joltphysicssharp >= 2.17.5"
+      "StbImageSharp >= 2.30.15"
     ]
   },
   "packageFolders": {
@@ -739,6 +739,10 @@
             "target": "Package",
             "version": "[3.0.1, )"
           },
+          "JoltPhysicsSharp": {
+            "target": "Package",
+            "version": "[2.17.5, )"
+          },
           "OpenTK": {
             "target": "Package",
             "version": "[4.9.4, )"
@@ -750,10 +754,6 @@
           "StbImageSharp": {
             "target": "Package",
             "version": "[2.30.15, )"
-          },
-          "joltphysicssharp": {
-            "target": "Package",
-            "version": "[2.17.5, )"
           }
         },
         "imports": [
@@ -775,5 +775,13 @@
         "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json."
+    }
+  ]
 }

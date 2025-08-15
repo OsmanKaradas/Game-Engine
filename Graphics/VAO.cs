@@ -15,12 +15,19 @@ namespace GameEngine
             BindVertexArray(ID);
         }
 
-        public void LinkToVAO(int location, int size, VBO vbo)
+        public void LinkToVAO(VBO vbo)
         {
+            int stride = 8 * sizeof(float);
             Bind();
             vbo.Bind();
-            VertexAttribPointer(location, size, VertexAttribPointerType.Float, false, 0, 0);
-            EnableVertexAttribArray(location);
+
+            VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
+            VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
+            VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
+            EnableVertexAttribArray(0);
+            EnableVertexAttribArray(1);
+            EnableVertexAttribArray(2);
+    
             Unbind();
         }
 

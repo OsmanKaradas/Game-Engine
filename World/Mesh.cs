@@ -43,141 +43,180 @@ namespace GameEngine.World
             buffers.vao.Unbind();
             buffers.ibo.Unbind();
         }
+        public static List<Vector3> CalculateSmoothNormals(List<Vector3> vertices, List<uint> indices)
+        {
+            List<Vector3> normals = new List<Vector3>(new Vector3[vertices.Count]);
+
+            // Loop over triangles
+            for (int i = 0; i < indices.Count; i += 3)
+            {
+                int i0 = (int)indices[i];
+                int i1 = (int)indices[i + 1];
+                int i2 = (int)indices[i + 2];
+
+                Vector3 v0 = vertices[i0];
+                Vector3 v1 = vertices[i1];
+                Vector3 v2 = vertices[i2];
+
+                Vector3 edge1 = v1 - v0;
+                Vector3 edge2 = v2 - v0;
+                Vector3 faceNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+
+                normals[i0] += faceNormal;
+                normals[i1] += faceNormal;
+                normals[i2] += faceNormal;
+            }
+
+            // Normalize all vertex normals
+            for (int i = 0; i < normals.Count; i++)
+            {
+                normals[i] = Vector3.Normalize(normals[i]);
+            }
+
+            return normals;
+        }
 
         private MeshData Plane()
         {
-            MeshData meshData = new MeshData(
-                // Vertices
-                new List<Vector3>
-                {
-                    new Vector3(-0.5f, 0f, 0.5f), // front left
-                    new Vector3(0.5f, 0f, 0.5f), // front right
-                    new Vector3(0.5f, 0f, -0.5f), // back right
-                    new Vector3(-0.5f, 0f, -0.5f), // back left 
-                },
+            // Vertices
+            List<Vector3> vertices = new List<Vector3>
+            {
+                new Vector3(-0.5f, 0f, 0.5f), // front left
+                new Vector3(0.5f, 0f, 0.5f), // front right
+                new Vector3(0.5f, 0f, -0.5f), // back right                    
+                new Vector3(-0.5f, 0f, -0.5f), // back left
+            };
 
-                // Indices
-                new List<uint>
-                {
-                    0, 1, 2,
-                    0, 3, 2
-                },
+            // Indices
+            List<uint> indices = new List<uint>
+            {
+                0, 1, 2,
+                0, 3, 2
+            };
 
-                // UV
-                new List<Vector2>
-                {
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f)
-                }
-            );
+            // UV
+            List<Vector2> uv = new List<Vector2>
+            {
+                new Vector2(0f, 1f),
+                new Vector2(1f, 1f),
+                new Vector2(1f, 0f),
+                new Vector2(0f, 0f)
+            };
 
-            return meshData;
+            return new MeshData(vertices, indices, uv, CalculateSmoothNormals(vertices, indices));
         }
 
         private MeshData Cube()
         {
-            MeshData meshData = new MeshData(
-                // Vertices
-                new List<Vector3>
-                {
-                    // front face
-                    //          x,     y,     z
-                    new Vector3(-0.5f, 0.5f, 0.5f), // top left - 0
-                    new Vector3(0.5f, 0.5f, 0.5f), // top right
-                    new Vector3(0.5f, -0.5f, 0.5f), // bottom right
-                    new Vector3(-0.5f, -0.5f, 0.5f), // bottom left        
+            // Vertices
+            List<Vector3> vertices = new List<Vector3>
+            {
+                new Vector3(0.5f, 0.5f, -0.5f),
 
-                    // right face
-                    new Vector3(0.5f, 0.5f, 0.5f), // top left - 4
-                    new Vector3(0.5f, 0.5f, -0.5f), // top right
-                    new Vector3(0.5f, -0.5f, -0.5f), // bottom right
-                    new Vector3(0.5f, -0.5f, 0.5f), // bottom left
+                new Vector3(0.5f, 0.5f, -0.5f),
 
-                    // back face
-                    new Vector3(0.5f, 0.5f, -0.5f), // top left - 8
-                    new Vector3(-0.5f, 0.5f, -0.5f), // top right
-                    new Vector3(-0.5f, -0.5f, -0.5f), // bottom right
-                    new Vector3(0.5f, -0.5f, -0.5f), // bottom left            
+                new Vector3(0.5f, 0.5f, -0.5f),
 
-                    // left face
-                    new Vector3(-0.5f, 0.5f, -0.5f), // top left - 12
-                    new Vector3(-0.5f, 0.5f, 0.5f), // top right
-                    new Vector3(-0.5f, -0.5f, 0.5f), // bottom right
-                    new Vector3(-0.5f, -0.5f, -0.5f), // bottom left            
+                new Vector3(0.5f, -0.5f, -0.5f),
 
-                    // top face
-                    new Vector3(-0.5f, 0.5f, -0.5f), // top left - 16
-                    new Vector3(0.5f, 0.5f, -0.5f), // top right
-                    new Vector3(0.5f, 0.5f, 0.5f), // bottom right
-                    new Vector3(-0.5f, 0.5f, 0.5f), // bottom left
+                new Vector3(0.5f, -0.5f, -0.5f),
 
-                    // bottom face
-                    new Vector3(-0.5f, -0.5f, 0.5f), // top left - 20
-                    new Vector3(0.5f, -0.5f, 0.5f), // top right
-                    new Vector3(0.5f, -0.5f, -0.5f), // bottom right
-                    new Vector3(-0.5f, -0.5f, -0.5f) // bottom left
-                },
+                new Vector3(0.5f, -0.5f, -0.5f),
 
-                // Indices
-                new List<uint>
-                {
-                    0, 1, 2,
-                    2, 3, 0,
+                new Vector3(0.5f, 0.5f, 0.5f),
 
-                    4, 5, 6,
-                    6, 7, 4,
+                new Vector3(0.5f, 0.5f, 0.5f),
 
-                    8, 9, 10,
-                    10, 11, 8,
+                new Vector3(0.5f, 0.5f, 0.5f),
 
-                    12, 13, 14,
-                    14, 15, 12,
+                new Vector3(0.5f, -0.5f, 0.5f),
 
-                    16, 17, 18,
-                    18, 19, 16,
+                new Vector3(0.5f, -0.5f, 0.5f),
 
-                    20, 21, 22,
-                    22, 23, 20
-                },
+                new Vector3(0.5f, -0.5f, 0.5f),
 
-                // UV
-                new List<Vector2>
-                {
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f),
+                new Vector3(-0.5f, 0.5f, -0.5f),
 
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f),
+                new Vector3(-0.5f, 0.5f, -0.5f),
 
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f),
+                new Vector3(-0.5f, 0.5f, -0.5f),
 
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f),
+                new Vector3(-0.5f, -0.5f, -0.5f),
 
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f),
+                new Vector3(-0.5f, -0.5f, -0.5f),
 
-                    new Vector2(0f, 1f),
-                    new Vector2(1f, 1f),
-                    new Vector2(1f, 0f),
-                    new Vector2(0f, 0f)
-                }
-            );
+                new Vector3(-0.5f, -0.5f, -0.5f),
 
-            return meshData;
+                new Vector3(-0.5f, 0.5f, 0.5f),
+
+                new Vector3(-0.5f, 0.5f, 0.5f),
+
+                new Vector3(-0.5f, 0.5f, 0.5f),
+
+                new Vector3(-0.5f, -0.5f, 0.5f),
+
+                new Vector3(-0.5f, -0.5f, 0.5f),
+
+                new Vector3(-0.5f, -0.5f, 0.5f)
+            };
+
+            // Indices
+            List<uint> indices = new List<uint>
+            {
+                1, 13, 19,
+                1, 19, 7,
+
+                9, 6, 18,
+                9, 18, 21,
+
+                23, 20, 14,
+                23, 14, 17,
+
+                16, 4, 10,
+                16, 10, 22,
+
+                5, 2, 8,
+                5, 8, 11,
+
+                15, 12, 0,
+                15, 0, 3
+            };
+
+            // UV
+            List<Vector2> uv = new List<Vector2>
+            {
+                new Vector2(0.625f, 0.5f),
+                new Vector2(0.625f, 0.5f),
+                new Vector2(0.625f, 0.5f),
+                new Vector2(0.375f, 0.5f),
+
+                new Vector2(0.375f, 0.5f),
+                new Vector2(0.375f, 0.5f),
+                new Vector2(0.625f, 0.25f),
+                new Vector2(0.625f, 0.25f),
+
+                new Vector2(0.625f, 0.25f),
+                new Vector2(0.375f, 0.25f),
+                new Vector2(0.375f, 0.25f),
+                new Vector2(0.375f, 0.25f),
+
+                new Vector2(0.625f, 0.75f),
+                new Vector2(0.875f, 0.5f),
+                new Vector2(0.625f, 0.75f),
+                new Vector2(0.375f, 0.75f),
+
+                new Vector2(0.125f, 0.5f),
+                new Vector2(0.375f, 0.75f),
+                new Vector2(0.625f, 0f),
+                new Vector2(0.875f, 0.25f),
+
+                new Vector2(0.625f, 1f),
+                new Vector2(0.375f, 0f),
+                new Vector2(0.125f, 0.25f),
+                new Vector2(0.375f, 1f)
+            };
+
+            return new MeshData(vertices, indices, uv, CalculateSmoothNormals(vertices, indices));
         }
 
         private MeshData Sphere(float radius, int segments, int rings)
@@ -222,55 +261,54 @@ namespace GameEngine.World
                 }
             }
 
-            return new MeshData(vertices, indices, uv);
+            return new MeshData(vertices, indices, uv, CalculateSmoothNormals(vertices, indices));
         }
 
         private MeshData Pyramid()
         {
-            MeshData meshData = new MeshData(
-                // Vertices
-                new List<Vector3>
-                {
-                    new Vector3(0f, 0.5f, 0f), // top
-                    new Vector3(-0.5f, 0f, 0.5f), // front left
-                    new Vector3(0.5f, 0f, 0.5f), // front right
-                    new Vector3(0.5f, 0f, -0.5f), // back right
-                    new Vector3(-0.5f, 0f, -0.5f) // back left
-                },
+            // Vertices
+            List<Vector3> vertices = new List<Vector3>
+            {
+                new Vector3(0f, 1f, 0f), // top
+                new Vector3(-0.5f, 0f, -0.5f), // front left
+                new Vector3(0.5f, 0f, -0.5f), // front right
+                new Vector3(0.5f, 0f, 0.5f), // back right
+                new Vector3(-0.5f, 0f, 0.5f) // back left
+            };
 
-                // Indices
-                new List<uint>
-                {
-                    0, 1, 2,
-                    0, 2, 3,
-                    0, 3, 4,
-                    0, 4, 1,
-                    1, 2, 3,
-                    1, 3, 4
-                },
+            // Indices
+            List<uint> indices = new List<uint>
+            {
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 1,
+                1, 2, 3,
+                3, 4, 1
+            };
 
-                // UV
-                new List<Vector2>
-                {
-                    new Vector2(0.5f, 1f),  // top - 0
-                    new Vector2(0f, 0f),    // front left - 1
-                    new Vector2(1f, 0f),    // front right - 2
-                    new Vector2(1f, 1f),    // back right - 3
-                    new Vector2(0f, 1f)     // back right - 4
-                }
-            );
+            // UV
+            List<Vector2> uv = new List<Vector2>
+            {
+                new Vector2(0.5f, 1f),  // top - 0
+                new Vector2(0f, 0f),    // front left - 1
+                new Vector2(1f, 0f),    // front right - 2
+                new Vector2(1f, 1f),    // back right - 3
+                new Vector2(0f, 1f)     // back right - 4
+            };
 
-            return meshData;
+            return new MeshData(vertices, indices, uv, CalculateSmoothNormals(vertices, indices));
         }
 
         public MeshData LoadGltfModel(string filePath)
         {
             // Load the model
-            var model = ModelRoot.Load(filePath);
+            var model = ModelRoot.Load("Models/" + filePath);
 
             var vertices = new List<Vector3>();
-            var uvs = new List<Vector2>();
             var indices = new List<uint>();
+            var normals = new List<Vector3>();
+            var uvs = new List<Vector2>();
 
             // Usually a model has scenes -> nodes -> meshes -> primitives
             // We'll grab the first mesh of the first node for simplicity
@@ -279,7 +317,8 @@ namespace GameEngine.World
             foreach (var prim in mesh.Primitives)
             {
                 var positionAccessor = prim.GetVertexAccessor("POSITION");
-                var texCoordAccessor = prim.GetVertexAccessor("TEXCOORD_0");
+                var normalAccesor = prim.GetVertexAccessor("NORMAL");
+                var uvAccesor = prim.GetVertexAccessor("TEXCOORD_0");
 
                 // Extract vertices
                 foreach (var pos in positionAccessor.AsVector3Array())
@@ -287,29 +326,35 @@ namespace GameEngine.World
                     vertices.Add(new Vector3(pos.X, pos.Y, pos.Z));
                 }
 
-                // Extract UVs
-                if (texCoordAccessor != null)
-                {
-                    foreach (var uv in texCoordAccessor.AsVector2Array())
-                    {
-                        uvs.Add(new Vector2(uv.X, uv.Y));
-                    }
-                }
-                else
-                {
-                    // If no UVs, fill with zeros
-                    for (int i = 0; i < positionAccessor.Count; i++)
-                        uvs.Add(Vector2.Zero);
-                }
-
                 // Extract indices
                 foreach (var idx in prim.GetIndices())
                 {
                     indices.Add((uint)idx);
                 }
+
+                //Extract Normals
+                if (normalAccesor != null)
+                {
+                    foreach (var norm in normalAccesor.AsVector3Array())
+                    {
+                        normals.Add(new Vector3(norm.X, norm.Y, norm.Z));
+                    }
+                }
+
+                // Extract UVs
+                if (uvAccesor != null)
+                {
+                    foreach (var uv in uvAccesor.AsVector2Array())
+                    {
+                        uvs.Add(new Vector2(uv.X, uv.Y));
+                    }
+                }
+
+                while (uvs.Count < vertices.Count) uvs.Add(Vector2.Zero);
+
             }
 
-            return new MeshData(vertices, indices, uvs);
+            return new MeshData(vertices, indices, uvs, normals);
         }
     }
 }

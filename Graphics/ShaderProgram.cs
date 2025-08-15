@@ -72,6 +72,31 @@ namespace GameEngine
             int location = GetUniformLocation(ID, name);
             Uniform4(location, value);
         }
+
+        public void SetVector3(string name, Vector3 value)
+        {
+            int location = GetUniformLocation(ID, name);
+            Uniform3(location, value);
+        }
+        
+        public void SetVector2(string name, Vector2 value)
+        {
+            int location = GetUniformLocation(ID, name);
+            Uniform2(location, value);
+        }
+
+        public void SetFloat(string name, float value)
+        {
+            int location = GetUniformLocation(ID, name);
+            Uniform1(location, value);
+        }
+        
+        public void SetInt(string name, int value)
+        {
+            int location = GetUniformLocation(ID, name);
+            Uniform1(location, value);
+        }
+
         public void SetBool(string name, bool value)
         {
             int location = GetUniformLocation(ID, name);

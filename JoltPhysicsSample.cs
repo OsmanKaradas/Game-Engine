@@ -43,9 +43,9 @@ public abstract class JoltPhysicsSample : IDisposable
     }
 
     public JobSystem JobSystem { get; set; }
-    public PhysicsSystem? System { get; private set; }
-    public BodyInterface BodyInterface => System!.BodyInterface;
-    public BodyLockInterface BodyLockInterface => System!.BodyLockInterface;
+    public PhysicsSystem System { get; private set; }
+    public BodyInterface BodyInterface => System.BodyInterface;
+    public BodyLockInterface BodyLockInterface => System.BodyLockInterface;
 
     public virtual void Dispose()
     {
@@ -137,34 +137,31 @@ public abstract class JoltPhysicsSample : IDisposable
 
     protected virtual ValidateResult OnContactValidate(PhysicsSystem system, in Body body1, in Body body2, Double3 baseOffset, in CollideShapeResult collisionResult)
     {
-        Console.WriteLine("Contact validate callback");
-
         // Allows you to ignore a contact before it is created (using layers to not make objects collide is cheaper!)
         return ValidateResult.AcceptAllContactsForThisBodyPair;
     }
 
     protected virtual void OnContactAdded(PhysicsSystem system, in Body body1, in Body body2, in ContactManifold manifold, in ContactSettings settings)
     {
-        Console.WriteLine("A contact was added");
+
     }
 
     protected virtual void OnContactPersisted(PhysicsSystem system, in Body body1, in Body body2, in ContactManifold manifold, in ContactSettings settings)
     {
-        Console.WriteLine("A contact was persisted");
+
     }
 
     protected virtual void OnContactRemoved(PhysicsSystem system, ref SubShapeIDPair subShapePair)
     {
-        Console.WriteLine("A contact was removed");
     }
 
     protected virtual void OnBodyActivated(PhysicsSystem system, in BodyID bodyID, ulong bodyUserData)
     {
-        Console.WriteLine("A body got activated");
+
     }
 
     protected virtual void OnBodyDeactivated(PhysicsSystem system, in BodyID bodyID, ulong bodyUserData)
     {
-        Console.WriteLine("A body went to sleep");
+
     }
 }

@@ -8,17 +8,11 @@ namespace GameEngine
     public class VBO
     {
         public int ID;
-        public VBO(List<Vector3> data)
+        public VBO(List<float> data)
         {
             ID = GenBuffer();
             Bind();
-            BufferData(BufferTarget.ArrayBuffer, data.Count * Vector3.SizeInBytes, data.ToArray(), BufferUsageHint.StaticDraw);
-        }
-        public VBO(List<Vector2> data)
-        {
-            ID = GenBuffer();
-            Bind();
-            BufferData(BufferTarget.ArrayBuffer, data.Count * Vector2.SizeInBytes, data.ToArray(), BufferUsageHint.StaticDraw);
+            BufferData(BufferTarget.ArrayBuffer, data.Count * sizeof(float), data.ToArray(), BufferUsageHint.StaticDraw);
         }
 
         public void Bind()

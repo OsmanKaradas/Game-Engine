@@ -12,7 +12,7 @@ namespace GameEngine.Physics
         public bool isStatic = false;
         public bool collided;
         private readonly Vector3 gravityForce = new Vector3(0, -9.81f, 0);
-        private Vector4 initialColor;
+        private Vector3 initialColor;
 
         public Rigidbody(GameObject owner, bool isStatic)
         {
@@ -22,7 +22,7 @@ namespace GameEngine.Physics
             initialColor = owner.color;
         }
 
-        public void Update(float deltaTime, List<GameObject> others)
+        public void Update(float deltaTime, List<Rigidbody> others)
         {
             owner.UpdateBounds();
             if (isStatic) return;
@@ -33,31 +33,27 @@ namespace GameEngine.Physics
             // Apply velocity
             owner.position += velocity * deltaTime;
 
-            CheckCollision(GameObject.gameObjects);
+            foreach(var other in others)
+                CheckCollision(other);
         }
 
-        private bool CheckCollision(List<GameObject> others)
+        private bool CheckCollision(Rigidbody other)
         {
-            foreach (var other in others)
+            if (SAT.CheckOBBCollision(owner.obbBounds, other.owner.obbBounds, out Vector3 mtv))
             {
-                if (other == owner) continue;
+                collided = true;
+                owner.position -= mtv;
 
-                if (SAT.CheckOBBCollision(owner.obbBounds, other.obbBounds, out Vector3 mtv))
-                {
-                    collided = true;
-                    owner.position -= mtv;
+                Vector3 mtvNormal = mtv.Normalized();
+                float velAlongNormal = Vector3.Dot(velocity, mtvNormal);
+                if (velAlongNormal > 0)
+                    velocity -= velAlongNormal * mtvNormal;
 
-                    Vector3 mtvNormal = mtv.Normalized();
-                    float velAlongNormal = Vector3.Dot(velocity, mtvNormal);
-                    if (velAlongNormal > 0)
-                        velocity -= velAlongNormal * mtvNormal;
-
-                    if (!other.rigidbody.isStatic)
-                        owner.color = new Vector4(1f, 0f, 0f, 1f);
-                    return true;
-                }
-                owner.color = initialColor;
+                if (!other.isStatic)
+                    owner.color = new Vector3(1f, 0f, 0f);
+                return true;
             }
+            owner.color = initialColor;
             collided = false;
             return false;
         }

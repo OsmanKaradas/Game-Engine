@@ -14,10 +14,8 @@ namespace GameEngine.World
         public Quaternion rotation;
         public Vector3 scale;
 
-        public Vector4 color;
-        private Texture? texture;
-        public Rigidbody rigidbody;
-        //public BepuRigidbody bepuRigidbody;
+        public Vector3 color;
+        public Material material;
         public JoltRigidbody joltRigidbody;
         public OBB obbBounds;
         public Vector3 worldMin;
@@ -26,30 +24,16 @@ namespace GameEngine.World
 
         public static List<GameObject> gameObjects = new();
 
-        public GameObject(Mesh mesh, Vector3 position, Vector4 color, bool isStatic, Vector3? scale = null, string texturePath = null)
+        public GameObject(Mesh mesh, Vector3 position, Vector3 color, bool isStatic, Vector3? scale = null)
         {
             this.mesh = mesh;
             this.position = position;
             this.color = color;
-            this.rotation = Quaternion.Identity;
+            rotation = Quaternion.Identity;
             this.scale = scale ?? Vector3.One;
-            if (!string.IsNullOrEmpty(texturePath))
-            {
-                try
-                {
-                    this.texture = new Texture(texturePath);
-                }
-                catch (Exception e)
-                {
-                    throw new ArgumentException("Failed to load texture: " + e.Message);
-                }
-            }
 
-            //rigidbody = new Rigidbody(this, isStatic);
-
-            obbBounds = new OBB(position, this.scale / 2f);
-            UpdateBounds();
-            //this.bepuRigidbody = new BepuRigidbody(simulation, this, 1f * this.scale.Length, isStatic);
+            material = new Material();
+            
             this.joltRigidbody = new JoltRigidbody(this, isStatic);
             gameObjects.Add(this);
         }
@@ -66,13 +50,25 @@ namespace GameEngine.World
         {
             Matrix4 model = GetModelMatrix();
 
-            shader.SetVector4("objectColor", color);
-            shader.SetBool("useTexture", texture != null);
+            material.BindMaterial();
+            material.Render(shader, color);
 
-            if (texture != null)
-            {
-                texture.Bind();
-            }
+            shader.SetBool("useTexture", material.useTexture);
+            shader.SetVector3("objectColor", color);
+
+            UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
+
+            mesh.Render();
+        }
+
+        public void RenderUnlit(ShaderProgram shader)
+        {
+            Matrix4 model = GetModelMatrix();
+
+            material.BindMaterial();
+
+            shader.SetBool("useTexture", material.useTexture);
+            shader.SetVector3("objectColor", color);
 
             UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
 
@@ -81,7 +77,7 @@ namespace GameEngine.World
 
         public void UpdateBounds()
         {
-            /*
+            
             worldMin = position - obbBounds.halfSize;
             worldMax = position + obbBounds.halfSize;
 
@@ -94,17 +90,12 @@ namespace GameEngine.World
             obbBounds.axes[0] = Vector3.Transform(Vector3.UnitX, rotation).Normalized();
             obbBounds.axes[1] = Vector3.Transform(Vector3.UnitY, rotation).Normalized();
             obbBounds.axes[2] = Vector3.Transform(Vector3.UnitZ, rotation).Normalized();
-            */
+
         }
 
         public void Update()
         {
-            /*if(!bepuRigidbody.isStatic)
-                position = bepuRigidbody.Position;
-                rotation = bepuRigidbody.Rotation;*/
-            if (!joltRigidbody.isStatic)
-                position = joltRigidbody.Position;
-                rotation = joltRigidbody.Rotation;
+            joltRigidbody.UpdateTransform();
         }
     }
 }

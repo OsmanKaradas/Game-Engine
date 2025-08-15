@@ -19,10 +19,10 @@ namespace GameEngine
             // texture parameters
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
-            TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-            StbImage.stbi_set_flip_vertically_on_load(1);
+            StbImage.stbi_set_flip_vertically_on_load(0);
             ImageResult texture = ImageResult.FromStream(File.OpenRead("Textures/" + filePath), ColorComponents.RedGreenBlueAlpha);
 
             TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, texture.Width, texture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, texture.Data);
@@ -38,7 +38,6 @@ namespace GameEngine
         public void Unbind()
         {
             BindTexture(TextureTarget.Texture2D, 0);
-            Enable(EnableCap.DepthTest);
         }
 
         public void Delete()
