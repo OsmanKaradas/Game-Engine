@@ -16,6 +16,8 @@ namespace GameEngine.World
 
         public Vector3 color;
         public Material material;
+        public Texture diffuseTex;
+        public Texture specularTex;
         public JoltRigidbody joltRigidbody;
         public OBB obbBounds;
         public Vector3 worldMin;
@@ -24,13 +26,16 @@ namespace GameEngine.World
 
         public static List<GameObject> gameObjects = new();
 
-        public GameObject(Mesh mesh, Vector3 position, Vector3 color, bool isStatic, Vector3? scale = null)
+        public GameObject(Mesh mesh, Vector3 position, Vector3 color, bool isStatic, Vector3? scale = null, Texture? diffuse = null, Texture? specular = null)
         {
             this.mesh = mesh;
             this.position = position;
             this.color = color;
             rotation = Quaternion.Identity;
             this.scale = scale ?? Vector3.One;
+
+            diffuseTex = diffuse;
+            specularTex = specular;
 
             material = new Material();
             
@@ -50,12 +55,10 @@ namespace GameEngine.World
         {
             Matrix4 model = GetModelMatrix();
 
-            material.BindMaterial();
-            material.Render(shader, color);
-
-            shader.SetBool("useTexture", material.useTexture);
             shader.SetVector3("objectColor", color);
 
+            material.Render(shader);
+            
             UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
 
             mesh.Render();
@@ -65,9 +68,8 @@ namespace GameEngine.World
         {
             Matrix4 model = GetModelMatrix();
 
-            material.BindMaterial();
+            material.Render(shader);
 
-            shader.SetBool("useTexture", material.useTexture);
             shader.SetVector3("objectColor", color);
 
             UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);

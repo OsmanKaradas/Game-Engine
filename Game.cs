@@ -65,24 +65,8 @@ namespace GameEngine
 
             Mesh rubixCubeMesh = new Mesh("rubixCube.glb");
             GameObject rubixCube = new GameObject(rubixCubeMesh, new Vector3(0f, 65f, -5f), new Vector3(1f, 1f, 1f), false);
-
-            rubixCube.material.diffuse = new Texture("RubixCube/rubixCube(Diffuse).png");
-            rubixCube.material.specular = new Texture("RubixCube/rubixCube(Roughness).png");
-
-            cubeblender.material.diffuse = new Texture("Dice(Diffuse).png");
-            
-            int ix = 0;
-            foreach (var uv in cubeblender.mesh.meshData.UV)
-            {
-                Console.WriteLine(uv + " | " + ix);
-                ix++;
-            }
-            int iv = 0;
-            foreach (var uv in player.mesh.meshData.UV)
-            {
-                Console.WriteLine(uv + " | " + iv);
-                iv++;
-            }
+            rubixCube.material.diffuse = new Texture("RubixCube/rubixCube(Diffuse).png", TextureUnit.Texture0);
+            rubixCube.material.diffuse = new Texture("RubixCube/rubixCube(Roughness).png", TextureUnit.Texture1);
             for (int i = 0; i < 10; i++)
             {
                 GameObject cube = new GameObject(cubeMesh, new Vector3(0f, i * 5f, -5f), new Vector3(i / 10f, 0f, 1f), false);
@@ -91,7 +75,8 @@ namespace GameEngine
             light = new GameObject(new Mesh(World.Type.Sphere), new Vector3(0f, 0f, 5f), new Vector3(1f, 1f, 1f), true);
 
             shader = new ShaderProgram("light.vert", "light.frag");
-
+            shader.SetInt("material.diffuseTex", 0);
+            shader.SetInt("material.specular", 1);
             Enable(EnableCap.DepthTest);
             camera = new Camera(width, height, Vector3.Zero);
 
@@ -104,7 +89,6 @@ namespace GameEngine
 
             JoltPhysicsSharp.Foundation.Shutdown();
             shader.Delete();
-            Texture.Unbind();
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)

@@ -11,6 +11,7 @@ struct Material
     sampler2D ambientTex;
     sampler2D diffuseTex;
     sampler2D specularTex;
+    sampler2D normalTex;
 
     float shininess;
 };
@@ -32,7 +33,11 @@ uniform vec3 objectColor;
 uniform vec3 viewPos;
 
 uniform sampler2D texture0;
-uniform bool useTexture;
+
+uniform bool useAmbientTex;
+uniform bool useDiffuseTex;
+uniform bool useSpecularTex;
+uniform bool useNormalTex;
 
 in vec3 normal;
 in vec2 uv;
@@ -54,16 +59,17 @@ void main()
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular);
-
+        
     vec3 result = (ambient + diffuse + specular) * objectColor;
 
-    if(useTexture)
-    {
-        ambient = light.ambient * vec3(texture(material.ambientTex, uv));
-        diffuse = light.diffuse * diff * vec3(texture(material.diffuseTex, uv));
+    if(useSpecularTex)
         specular = light.specular * spec * vec3(texture(material.specularTex, uv));
+
+    if(useDiffuseTex){
+        ambient = light.ambient * vec3(texture(material.diffuseTex, uv));
+        diffuse = light.diffuse * diff * vec3(texture(material.diffuseTex, uv));
         result = ambient + diffuse + specular;
     }
-
+    
     FragColor = vec4(result, 1.0);
 }

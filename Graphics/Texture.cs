@@ -9,11 +9,13 @@ namespace GameEngine
     public class Texture
     {
         public int ID;
-
-        public Texture(string filePath)
+        public TextureUnit unit;
+        public Texture(string filePath, TextureUnit unit)
         {
+            this.unit = unit;
+
             ID = GenTexture();
-            ActiveTexture(TextureUnit.Texture0);
+            ActiveTexture(unit);
             BindTexture(TextureTarget.Texture2D, ID);
 
             // texture parameters
@@ -32,6 +34,7 @@ namespace GameEngine
 
         public void Bind()
         {
+            ActiveTexture(unit);
             BindTexture(TextureTarget.Texture2D, ID);
         }
 

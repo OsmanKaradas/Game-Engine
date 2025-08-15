@@ -82,43 +82,29 @@ namespace GameEngine.World
             this.specular = specular;
         }
 
-        public void BindMaterial()
+        public void Render(ShaderProgram shader)
         {
-            if (ambient != null)
-            {
-                ambient.Bind();
-                useTexture = true;
-            }
-            else
-            {
-                ambient = diffuse;
-            }
-
-            if (diffuse != null)
-            {
-                diffuse.Bind();
-                useTexture = true;
-            }
-
-            if (specular != null)
-            {
-                specular.Bind();
-                useTexture = true;
-            }
-
-            if (normal != null)
-            {
-                normal.Bind();
-                useTexture = true;
-            }
-        }
-
-        public void Render(ShaderProgram shader, Vector3 color)
-        {
-            shader.SetVector3("material.ambient", new Vector3(0.75f, 0.75f, 0.75f));
             shader.SetVector3("material.diffuse", new Vector3(0.75f, 0.75f, 0.75f));
             shader.SetVector3("material.specular", new Vector3(0.5f, 0.5f, 0.5f));
             shader.SetFloat("material.shininess", 32f);
+
+            if (diffuse != null){
+                diffuse.Bind();
+                shader.SetInt("material.diffuseTex", 0);
+                shader.SetBool("useDiffuseTex", true);
+            }
+            else{
+                shader.SetBool("useDiffuseTex", false);
+            }
+
+            if (specular != null){
+                specular.Bind();
+                shader.SetInt("material.specularTex", 1);
+                shader.SetBool("useSpecularTex", true);
+            }
+            else{
+                shader.SetBool("useSpecularTex", false);
+            }
         }
     }
 }
