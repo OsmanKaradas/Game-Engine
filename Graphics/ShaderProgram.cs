@@ -35,14 +35,14 @@ namespace GameEngine
 
             LinkProgram(ID);
 
+            // Materials
+            this.SetInt("material.diffuseTex", 0);
+            this.SetInt("material.specularTex", 1);
+
             DeleteShader(vertexShader);
             DeleteShader(fragmentShader);
         }
 
-        public void Bind()
-        {
-            UseProgram(ID);
-        }
         public void Unbind()
         {
             UseProgram(0);
@@ -65,6 +65,20 @@ namespace GameEngine
                 Console.WriteLine("Failed to load shader source file: " + e.Message);
                 return "";
             }
+        }
+
+        public void Render(Camera camera)
+        {
+            UseProgram(ID);
+
+            Matrix4 view = camera.GetViewMatrix();
+            Matrix4 projection = camera.GetProjectionMatrix();
+
+            int viewLocation = GetUniformLocation(ID, "view");
+            int projectionLocation = GetUniformLocation(ID, "projection");
+
+            UniformMatrix4(viewLocation, true, ref view);
+            UniformMatrix4(projectionLocation, true, ref projection); 
         }
 
         public void SetVector4(string name, Vector4 value)

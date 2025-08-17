@@ -1,9 +1,7 @@
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
-using BepuPhysics;
 using GameEngine.Physics;
-using BepuPhysics.CollisionDetection;
 
 namespace GameEngine.World
 {
@@ -16,30 +14,33 @@ namespace GameEngine.World
 
         public Vector3 color;
         public Material material;
-        public Texture diffuseTex;
-        public Texture specularTex;
-        public JoltRigidbody joltRigidbody;
+        public Texture diffuseTex = null!;
+        public Texture specularTex = null!;
+        public Rigidbody? rigidbody;
         public OBB obbBounds;
         public Vector3 worldMin;
         public Vector3 worldMax;
         public string tag = "";
 
+        public Vector3 front = -Vector3.UnitZ;
+        public Vector3 right = Vector3.UnitX;
+        public Vector3 up = Vector3.UnitY;
         public static List<GameObject> gameObjects = new();
 
-        public GameObject(Mesh mesh, Vector3 position, Vector3 color, bool isStatic, Vector3? scale = null, Texture? diffuse = null, Texture? specular = null)
+        public GameObject(Mesh mesh, Vector3 position, Material material, Rigidbody? rigidbody = null, Vector3? scale = null)
         {
             this.mesh = mesh;
             this.position = position;
-            this.color = color;
             rotation = Quaternion.Identity;
             this.scale = scale ?? Vector3.One;
+            this.material = material;
+            this.rigidbody = rigidbody;
+            if (rigidbody != null)
+            {
+                Vector3 colliderSize = this.scale * mesh.size;
+                rigidbody.Setup(position, rotation, colliderSize);
+            }
 
-            diffuseTex = diffuse;
-            specularTex = specular;
-
-            material = new Material();
-            
-            this.joltRigidbody = new JoltRigidbody(this, isStatic);
             gameObjects.Add(this);
         }
 
@@ -47,34 +48,46 @@ namespace GameEngine.World
         {
             return
                 Matrix4.CreateScale(scale) *
-                Matrix4.CreateFromQuaternion(new Quaternion(rotation.X, rotation.Y, rotation.Z)) *
+                Matrix4.CreateFromQuaternion(new Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
                 Matrix4.CreateTranslation(position);
         }
         
-        public void Render(ShaderProgram shader)
+        public static void Render(ShaderProgram shader)
         {
-            Matrix4 model = GetModelMatrix();
+            foreach (GameObject obj in gameObjects)
+            {
+                if (obj.position.Y < -50f)
+                    return;
 
-            shader.SetVector3("objectColor", color);
+                Matrix4 model = obj.GetModelMatrix();
 
-            material.Render(shader);
-            
-            UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
+                shader.SetVector3("objectColor", obj.color);
+                obj.material.Render(shader);
+                UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
 
-            mesh.Render();
+                obj.Update();
+
+                obj.mesh.Render();            
+            }
         }
 
-        public void RenderUnlit(ShaderProgram shader)
+        public static void RenderUnlit(ShaderProgram shader)
         {
-            Matrix4 model = GetModelMatrix();
+            foreach (GameObject obj in gameObjects)
+            {
+                if (obj.position.Y < -50f)
+                    return;
 
-            material.Render(shader);
+                Matrix4 model = obj.GetModelMatrix();
 
-            shader.SetVector3("objectColor", color);
+                obj.material.Render(shader);
+                shader.SetVector3("objectColor", obj.color);
+                UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
 
-            UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
+                obj.Update();
 
-            mesh.Render();
+                obj.mesh.Render();            
+            }
         }
 
         public void UpdateBounds()
@@ -97,7 +110,12 @@ namespace GameEngine.World
 
         public void Update()
         {
-            joltRigidbody.UpdateTransform();
+            if (rigidbody != null)
+            {
+                rigidbody.Update();
+                position = new Vector3(rigidbody.position.X, rigidbody.position.Y, rigidbody.position.Z);
+                rotation = new Quaternion(rigidbody.rotation.X, rigidbody.rotation.Y, rigidbody.rotation.Z, rigidbody.rotation.W);
+            }
         }
     }
 }

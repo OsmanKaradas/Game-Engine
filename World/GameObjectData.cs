@@ -68,28 +68,30 @@ namespace GameEngine.World
 
     public class Material
     {
-        public bool useTexture = false;
+        public Vector3 color;
+        public float ambient = 0.2f;
+        public Vector3 diffuse;
+        public float specular = 0.5f;
+        public float shininess;
+        public Texture? diffuseTex;
+        public Texture? specularTex;
 
-        public Texture? ambient;
-        public Texture? diffuse;
-        public Texture? specular;
-        public Texture? normal;
-
-        public Material(Texture? diffuse = null, Texture? normal = null, Texture? specular = null)
+        public Material(Vector3 color, Texture? diffuseTex = null, Texture? specularTex = null)
         {
-            this.diffuse = diffuse;
-            this.normal = normal;
-            this.specular = specular;
+            this.diffuseTex = diffuseTex;
+            this.specularTex = specularTex;
+            diffuse = color;
         }
 
         public void Render(ShaderProgram shader)
         {
-            shader.SetVector3("material.diffuse", new Vector3(0.75f, 0.75f, 0.75f));
-            shader.SetVector3("material.specular", new Vector3(0.5f, 0.5f, 0.5f));
+            shader.SetFloat("material.ambient", ambient);
+            shader.SetVector3("material.diffuse", diffuse);
+            shader.SetFloat("material.specular", specular);
             shader.SetFloat("material.shininess", 32f);
 
-            if (diffuse != null){
-                diffuse.Bind();
+            if (diffuseTex != null){
+                diffuseTex.Bind();
                 shader.SetInt("material.diffuseTex", 0);
                 shader.SetBool("useDiffuseTex", true);
             }
@@ -97,8 +99,8 @@ namespace GameEngine.World
                 shader.SetBool("useDiffuseTex", false);
             }
 
-            if (specular != null){
-                specular.Bind();
+            if (specularTex != null){
+                specularTex.Bind();
                 shader.SetInt("material.specularTex", 1);
                 shader.SetBool("useSpecularTex", true);
             }

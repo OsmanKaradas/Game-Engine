@@ -71,8 +71,6 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x86/native/freetype.dll
 /Users/osmankaradas/GameEngine/obj/Debug/net9.0/GameEngine.sourcelink.json
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/SharpGLTF.Core.dll
-/Users/osmankaradas/GameEngine/bin/Debug/net9.0/BepuPhysics.dll
-/Users/osmankaradas/GameEngine/bin/Debug/net9.0/BepuUtilities.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/JoltPhysicsSharp.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-arm/native/libjoltc.so
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/android-arm64/native/libjoltc.so

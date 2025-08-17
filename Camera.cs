@@ -7,7 +7,7 @@ using OpenTK.Windowing.Common;
 
 namespace GameEngine
 {
-    internal class Camera
+    public class Camera
     {
         public bool cameraMode = true;
         private float SPEED = 8f;
@@ -100,6 +100,9 @@ namespace GameEngine
                     position.Y -= velocity;
                 }
             }
+
+            if (input.IsKeyPressed(Keys.F))
+                cameraMode = !cameraMode;
 
             yaw += mouse.Delta.X * SENSITIVITY;
             pitch -= mouse.Delta.Y * SENSITIVITY;

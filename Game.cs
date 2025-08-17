@@ -10,25 +10,29 @@ using OpenTK.Mathematics;
 using static OpenTK.Graphics.OpenGL4.GL;
 using GameEngine.World;
 using GameEngine.Physics;
+using JoltPhysicsSharp;
 
 namespace GameEngine
 {
     internal class Game : GameWindow
     {
-        public static JoltPhysicsSample physicsSample = new JoltPhysicsSetup();
-        public ShaderProgram shader;
+        public static JoltPhysics physics = null!;
+        public ShaderProgram shader = null!;
 
         // camera
-        Camera camera;
-        public GameObject player;
-        public GameObject light;
+        public Camera camera = null!;
+        public GameObject player = null!;
+        public GameObject lightObj = null!;
+        public Light light = null!;
         public float speed = 10f;
 
+        Mesh cubeBlenderMesh = null!;
         int width;
         int height;
-
+        Vector3 lightDirection = new Vector3(-0.2f, -1f, -0.3f);
         float fps;
 
+        //System.Numerics.Vector3 pos;
         public Game(int width, int height) : base(GameWindowSettings.Default, NativeWindowSettings.Default)
         {
             this.width = width;
@@ -50,36 +54,37 @@ namespace GameEngine
         {
             base.OnLoad();
 
-            JoltPhysicsSharp.Foundation.Init();
-            physicsSample.Initialize();
+            shader = new ShaderProgram("light.vert", "light.frag");
+            camera = new Camera(width, height, Vector3.Zero);
+            physics = new JoltPhysics();
 
+            Mesh sphereMesh = new Mesh(World.Type.Sphere);
+            lightObj = new GameObject(sphereMesh, new Vector3(0f, 5f, 5f), new Material(new Vector3(1f, 1f, 1f)));
+            light = new SpotLight(shader, lightObj);            
             Mesh cubeMesh = new Mesh(World.Type.Cube);
-            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -10f, -5f), new Vector3(0.75f, 0.75f, 0.75f), true, new Vector3(50f, 1f, 50f));
-            player = new GameObject(cubeMesh, new Vector3(0f, 55f, -5f), new Vector3(1f, 0.25f, 0.25f), false);
+            Mesh groundMesh = new Mesh("Ground.glb");
+            GameObject ground = new GameObject(groundMesh, new Vector3(0f, -10f, -5f), new Material(new Vector3(0.75f, 0.75f, 0.75f)), new Rigidbody(Rigidbody.BodyType.Box, true));
+            
+            player = new GameObject(cubeMesh, new Vector3(0f, 55f, -5f), new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(Rigidbody.BodyType.Box, false));
 
             Mesh testDummyMesh = new Mesh("test_dummy.glb");
-            GameObject testDummy = new GameObject(testDummyMesh, new Vector3(5f, 2f, -5f), new Vector3(0f, 1f, 0.25f), false, new Vector3(0.5f, 0.5f, 0.5f));
+            GameObject testDummy = new GameObject(testDummyMesh, new Vector3(5f, 2f, -5f), new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(Rigidbody.BodyType.Box, false));
 
-            Mesh cubeBlenderMesh = new Mesh("cube.glb");
-            GameObject cubeblender = new GameObject(cubeBlenderMesh, new Vector3(0f, 60f, -5f), new Vector3(1f, 1f, 0f), false);
+            cubeBlenderMesh = new Mesh("cube.glb");
+            GameObject cubeblender = new GameObject(cubeBlenderMesh, new Vector3(0f, 60f, -5f), new Material(new Vector3(1f, 1f, 0f)), new Rigidbody(Rigidbody.BodyType.Box, false));
+            cubeblender.material.diffuseTex = new Texture("Dice(Diffuse).png", TextureUnit.Texture0);
 
             Mesh rubixCubeMesh = new Mesh("rubixCube.glb");
-            GameObject rubixCube = new GameObject(rubixCubeMesh, new Vector3(0f, 65f, -5f), new Vector3(1f, 1f, 1f), false);
-            rubixCube.material.diffuse = new Texture("RubixCube/rubixCube(Diffuse).png", TextureUnit.Texture0);
-            rubixCube.material.diffuse = new Texture("RubixCube/rubixCube(Roughness).png", TextureUnit.Texture1);
+            GameObject rubixCube = new GameObject(rubixCubeMesh, new Vector3(0f, 65f, -5f), new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(Rigidbody.BodyType.Box, false));
+            rubixCube.material.diffuseTex = new Texture("RubixCube/rubixCube(Diffuse).png", TextureUnit.Texture0);
+            rubixCube.material.specularTex = new Texture("RubixCube/rubixCube(Roughness).png", TextureUnit.Texture1);
+
             for (int i = 0; i < 10; i++)
             {
-                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, i * 5f, -5f), new Vector3(i / 10f, 0f, 1f), false);
+                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, i * 5f, -5f),new Material(new Vector3(i / 10f, 0f, 1f)), new Rigidbody(Rigidbody.BodyType.Box, false));
             }
 
-            light = new GameObject(new Mesh(World.Type.Sphere), new Vector3(0f, 0f, 5f), new Vector3(1f, 1f, 1f), true);
-
-            shader = new ShaderProgram("light.vert", "light.frag");
-            shader.SetInt("material.diffuseTex", 0);
-            shader.SetInt("material.specular", 1);
             Enable(EnableCap.DepthTest);
-            camera = new Camera(width, height, Vector3.Zero);
-
             CursorState = CursorState.Grabbed;
         }
 
@@ -87,8 +92,7 @@ namespace GameEngine
         {
             base.OnUnload();
 
-            JoltPhysicsSharp.Foundation.Shutdown();
-            shader.Delete();
+            physics.Dispose();
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -99,29 +103,11 @@ namespace GameEngine
             ClearColor(Color4.White);
             Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            shader.Bind();
-
-            Matrix4 view = camera.GetViewMatrix();
-            Matrix4 projection = camera.GetProjectionMatrix();
-
-            int viewLocation = GetUniformLocation(shader.ID, "view");
-            int projectionLocation = GetUniformLocation(shader.ID, "projection");
-
+            shader.Render(camera);
+            light.Render();
             shader.SetVector3("viewPos", camera.position);
 
-            shader.SetVector3("light.position", light.position);
-            shader.SetVector3("light.ambient", new Vector3(0.75f, 0.75f, 0.75f));
-            shader.SetVector3("light.diffuse", new Vector3(0.5f, 0.5f, 0.5f));
-            shader.SetVector3("light.specular", new Vector3(0.75f, 0.75f, 0.75f));
-
-            UniformMatrix4(viewLocation, true, ref view);
-            UniformMatrix4(projectionLocation, true, ref projection);
-
-            foreach (GameObject obj in GameObject.gameObjects)
-            {
-                obj.Update();
-                obj.Render(shader);
-            }
+            GameObject.Render(shader);
 
             SwapBuffers();
             base.OnRenderFrame(args);
@@ -135,26 +121,30 @@ namespace GameEngine
 
             Time.Update(args.Time);
 
-            physicsSample.System.Update(Time.deltaTime, 1, physicsSample.JobSystem);
-
+            physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
+            
             if (!camera.cameraMode)
             {
-                float moveSpeed = speed;
-                System.Numerics.Vector3 velocity = physicsSample.BodyInterface.GetLinearVelocity(player.joltRigidbody.bodyID);
+                float moveSpeed = speed * (float)args.Time;
 
                 if (input.IsKeyDown(Keys.LeftShift)) moveSpeed *= 2.5f;
 
-                if (input.IsKeyDown(Keys.W)) physicsSample.BodyInterface.AddForce(player.joltRigidbody.bodyID, new System.Numerics.Vector3(0f, 0f, moveSpeed));
-                if (input.IsKeyDown(Keys.S)) physicsSample.BodyInterface.AddForce(player.joltRigidbody.bodyID, new System.Numerics.Vector3(0f, 0f, -moveSpeed));
-                if (input.IsKeyDown(Keys.A)) physicsSample.BodyInterface.AddForce(player.joltRigidbody.bodyID, new System.Numerics.Vector3(-moveSpeed, 0f, 0f));
-                if (input.IsKeyDown(Keys.D)) physicsSample.BodyInterface.AddForce(player.joltRigidbody.bodyID, new System.Numerics.Vector3(moveSpeed, 0f, 0f));
+                if (input.IsKeyDown(Keys.W)) lightObj.position.Z -= moveSpeed;
+                if (input.IsKeyDown(Keys.S)) lightObj.position.Z += moveSpeed;
+                if (input.IsKeyDown(Keys.A)) lightObj.position.X -= moveSpeed;
+                if (input.IsKeyDown(Keys.D)) lightObj.position.X += moveSpeed;
+                if (input.IsKeyDown(Keys.Space)) lightObj.position.Y += moveSpeed;
+                if (input.IsKeyDown(Keys.X)) lightObj.position.Y -= moveSpeed;
             }
 
-            if (input.IsKeyPressed(Keys.F))
-                camera.cameraMode = !camera.cameraMode;
+            if (input.IsKeyDown(Keys.J))
+            {
+                GameObject cubeblender = new GameObject(cubeBlenderMesh, new Vector3(5f, 60f, -5f), new Material(new Vector3(1f, 1f, 0f)), new Rigidbody(Rigidbody.BodyType.Box, false));
+                cubeblender.material.diffuseTex = new Texture("Dice(Diffuse).png", TextureUnit.Texture0);
+            }
 
             camera.Update(input, mouse, args);
-            // show cursor
+
             if (input.IsKeyPressed(Keys.Escape))
             {
                 Close();

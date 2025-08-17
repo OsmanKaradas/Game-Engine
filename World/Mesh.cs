@@ -13,10 +13,20 @@ namespace GameEngine.World
 
         public Buffers buffers;
 
+        Vector3 minBounds;
+        Vector3 maxBounds;
+        public Vector3 size;
+
         public Mesh(string filePath)
         {
-            this.meshData = LoadGltfModel(filePath);
+            minBounds = new Vector3(float.MaxValue);
+            maxBounds = new Vector3(float.MinValue);
+
+            meshData = LoadGltfModel(filePath);
+
             buffers = new Buffers(meshData);
+
+            size = maxBounds - minBounds;
         }
 
         public Mesh(Type type)
@@ -31,6 +41,17 @@ namespace GameEngine.World
             };
 
             buffers = new Buffers(meshData);
+
+            Vector3 minBounds = new Vector3(float.MaxValue);
+            Vector3 maxBounds = new Vector3(float.MinValue);
+
+            foreach (var v in meshData.Vertices)
+            {
+                minBounds = Vector3.ComponentMin(minBounds, new Vector3(v.X, v.Y, v.Z));
+                maxBounds = Vector3.ComponentMax(maxBounds, new Vector3(v.X, v.Y, v.Z));
+            }
+
+            size = maxBounds - minBounds;
         }
 
         public void Render()
@@ -324,6 +345,8 @@ namespace GameEngine.World
                 foreach (var pos in positionAccessor.AsVector3Array())
                 {
                     vertices.Add(new Vector3(pos.X, pos.Y, pos.Z));
+                    minBounds = Vector3.ComponentMin(minBounds, new Vector3(pos.X, pos.Y, pos.Z));
+                    maxBounds = Vector3.ComponentMax(maxBounds, new Vector3(pos.X, pos.Y, pos.Z));
                 }
 
                 // Extract indices

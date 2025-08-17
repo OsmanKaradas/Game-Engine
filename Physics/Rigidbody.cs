@@ -1,61 +1,92 @@
+using JoltPhysicsSharp;
 using OpenTK.Mathematics;
 using GameEngine.World;
-using System.Collections.Generic;
 
 namespace GameEngine.Physics
 {
     public class Rigidbody
     {
-        public GameObject owner;
-        public Vector3 velocity;
-        public float mass = 1f;
-        public bool isStatic = false;
-        public bool collided;
-        private readonly Vector3 gravityForce = new Vector3(0, -9.81f, 0);
-        private Vector3 initialColor;
-
-        public Rigidbody(GameObject owner, bool isStatic)
+        public enum BodyType
         {
-            this.owner = owner;
+            Box,
+            Sphere,
+            Floor
+        }
+        public System.Numerics.Vector3 position;
+        public System.Numerics.Quaternion rotation;
+        public System.Numerics.Vector3 scale;
+
+        private BodyType bodyType;
+        public Body? body;
+        public BodyID bodyID;
+        public bool isStatic;
+
+        private bool isSetup;
+        public Rigidbody(BodyType bodyType, bool isStatic)
+        {
+            this.bodyType = bodyType;
             this.isStatic = isStatic;
-            velocity = Vector3.Zero;
-            initialColor = owner.color;
         }
 
-        public void Update(float deltaTime, List<Rigidbody> others)
+        public void Setup(Vector3 position, Quaternion rotation, Vector3 scale)
         {
-            owner.UpdateBounds();
-            if (isStatic) return;
+            this.position = new System.Numerics.Vector3(position.X, position.Y, position.Z);
+            this.rotation = new System.Numerics.Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W);
+            this.scale = new System.Numerics.Vector3(scale.X, scale.Y, scale.Z);
 
-            // Apply gravity
-            velocity += gravityForce / mass * deltaTime;
-
-            // Apply velocity
-            owner.position += velocity * deltaTime;
-
-            foreach(var other in others)
-                CheckCollision(other);
-        }
-
-        private bool CheckCollision(Rigidbody other)
-        {
-            if (SAT.CheckOBBCollision(owner.obbBounds, other.owner.obbBounds, out Vector3 mtv))
+            switch (bodyType)
             {
-                collided = true;
-                owner.position -= mtv;
-
-                Vector3 mtvNormal = mtv.Normalized();
-                float velAlongNormal = Vector3.Dot(velocity, mtvNormal);
-                if (velAlongNormal > 0)
-                    velocity -= velAlongNormal * mtvNormal;
-
-                if (!other.isStatic)
-                    owner.color = new Vector3(1f, 0f, 0f);
-                return true;
+                case BodyType.Box:
+                    body = CreateBoxRigidbody();
+                    break;
+                case BodyType.Sphere:
+                    body = CreateSphereRigidbody();
+                    break;
+                case BodyType.Floor:
+                    body = Game.physics.CreateFloor(scale.Length * 0.5f, JoltPhysics.Layers.NonMoving);
+                    break;
             }
-            owner.color = initialColor;
-            collided = false;
-            return false;
+
+            isSetup = true;
+        }
+
+        public void Update()
+        {
+            if (!isSetup)
+                return;
+
+            var transform = Game.physics.BodyInterface.GetTransformedShape(Game.physics.BodyLockInterface, bodyID);
+
+            position = transform.ShapePositionCOM;
+            rotation = transform.ShapeRotation;
+        }
+
+        public Body CreateBoxRigidbody()
+        {
+            Body box = Game.physics.CreateBox(
+                scale * 0.5f,
+                position,
+                rotation,
+                isStatic ? MotionType.Static : MotionType.Dynamic,
+                isStatic ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving,
+                Activation.Activate
+            );
+            bodyID = box.ID;
+            return box;
+        }
+
+        public Body CreateSphereRigidbody()
+        {
+            Body sphere = Game.physics.CreateSphere(
+                0.7f,
+                position,
+                rotation,
+                isStatic ? MotionType.Static : MotionType.Dynamic,
+                isStatic ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving,
+                Activation.Activate
+            );
+            bodyID = sphere.ID;
+            return sphere;
         }
     }
 }

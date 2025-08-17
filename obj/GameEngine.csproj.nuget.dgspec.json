@@ -44,10 +44,6 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "BepuPhysics": {
-              "target": "Package",
-              "version": "[2.4.0, )"
-            },
             "FreeTypeSharp": {
               "target": "Package",
               "version": "[3.0.1, )"

@@ -1,11 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "C3sGBaT3oSg=",
+  "dgSpecHash": "O+0iDTu5MbE=",
   "success": true,
   "projectFilePath": "/Users/osmankaradas/GameEngine/GameEngine.csproj",
   "expectedPackageFiles": [
-    "/Users/osmankaradas/.nuget/packages/bepuphysics/2.4.0/bepuphysics.2.4.0.nupkg.sha512",
-    "/Users/osmankaradas/.nuget/packages/bepuutilities/2.4.0/bepuutilities.2.4.0.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/freetypesharp/3.0.1/freetypesharp.3.0.1.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/joltphysicssharp/2.17.5/joltphysicssharp.2.17.5.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/opentk/4.9.4/opentk.4.9.4.nupkg.sha512",
@@ -23,15 +21,5 @@
     "/Users/osmankaradas/.nuget/packages/stbimagesharp/2.30.15/stbimagesharp.2.30.15.nupkg.sha512",
     "/Users/osmankaradas/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.",
-      "projectPath": "/Users/osmankaradas/GameEngine/GameEngine.csproj",
-      "warningLevel": 1,
-      "filePath": "/Users/osmankaradas/GameEngine/GameEngine.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }
