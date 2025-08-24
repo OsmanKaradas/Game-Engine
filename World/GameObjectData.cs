@@ -20,8 +20,6 @@ namespace GameEngine.World
 
         public Buffers(MeshData meshData)
         {
-            // Setup
-
             vao = new VAO();
 
             List<float> vertexData = new List<float>();
@@ -63,50 +61,6 @@ namespace GameEngine.World
             this.Indices = Indices;
             this.UV = UV;
             this.Normals = Normals;
-        }
-    }
-
-    public class Material
-    {
-        public Vector3 color;
-        public float ambient = 0.2f;
-        public Vector3 diffuse;
-        public float specular = 0.5f;
-        public float shininess;
-        public Texture? diffuseTex;
-        public Texture? specularTex;
-
-        public Material(Vector3 color, Texture? diffuseTex = null, Texture? specularTex = null)
-        {
-            this.diffuseTex = diffuseTex;
-            this.specularTex = specularTex;
-            diffuse = color;
-        }
-
-        public void Render(ShaderProgram shader)
-        {
-            shader.SetFloat("material.ambient", ambient);
-            shader.SetVector3("material.diffuse", diffuse);
-            shader.SetFloat("material.specular", specular);
-            shader.SetFloat("material.shininess", 32f);
-
-            if (diffuseTex != null){
-                diffuseTex.Bind();
-                shader.SetInt("material.diffuseTex", 0);
-                shader.SetBool("useDiffuseTex", true);
-            }
-            else{
-                shader.SetBool("useDiffuseTex", false);
-            }
-
-            if (specularTex != null){
-                specularTex.Bind();
-                shader.SetInt("material.specularTex", 1);
-                shader.SetBool("useSpecularTex", true);
-            }
-            else{
-                shader.SetBool("useSpecularTex", false);
-            }
         }
     }
 }

@@ -1,6 +1,7 @@
 using JoltPhysicsSharp;
 using OpenTK.Mathematics;
 using GameEngine.World;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace GameEngine.Physics
 {
@@ -17,18 +18,23 @@ namespace GameEngine.Physics
         public System.Numerics.Vector3 scale;
 
         private BodyType bodyType;
-        public Body? body;
+        public Body body = null!;
         public BodyID bodyID;
         public bool isStatic;
 
-        private bool isSetup;
+        public float speed = 8f;
+        private float moveSpeed;
+        private System.Numerics.Vector3 force;
+
+        private bool initialized;
+
         public Rigidbody(BodyType bodyType, bool isStatic)
         {
             this.bodyType = bodyType;
             this.isStatic = isStatic;
         }
 
-        public void Setup(Vector3 position, Quaternion rotation, Vector3 scale)
+        public void Initialize(Vector3 position, Quaternion rotation, Vector3 scale)
         {
             this.position = new System.Numerics.Vector3(position.X, position.Y, position.Z);
             this.rotation = new System.Numerics.Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W);
@@ -47,12 +53,12 @@ namespace GameEngine.Physics
                     break;
             }
 
-            isSetup = true;
+            initialized = true;
         }
 
-        public void Update()
+        public void UpdateTransform()
         {
-            if (!isSetup)
+            if (!initialized)
                 return;
 
             var transform = Game.physics.BodyInterface.GetTransformedShape(Game.physics.BodyLockInterface, bodyID);
@@ -61,7 +67,7 @@ namespace GameEngine.Physics
             rotation = transform.ShapeRotation;
         }
 
-        public Body CreateBoxRigidbody()
+        private Body CreateBoxRigidbody()
         {
             Body box = Game.physics.CreateBox(
                 scale * 0.5f,
@@ -75,7 +81,7 @@ namespace GameEngine.Physics
             return box;
         }
 
-        public Body CreateSphereRigidbody()
+        private Body CreateSphereRigidbody()
         {
             Body sphere = Game.physics.CreateSphere(
                 0.7f,
@@ -87,6 +93,27 @@ namespace GameEngine.Physics
             );
             bodyID = sphere.ID;
             return sphere;
+        }
+
+        public void Move(KeyboardState keyboardInput)
+        {
+            if (!initialized)
+                return;
+
+            Vector3 newPos;
+            
+            moveSpeed = speed;
+
+            if (keyboardInput.IsKeyDown(Keys.LeftControl)) { moveSpeed *= 1.25f; }
+
+            if (keyboardInput.IsKeyDown(Keys.W)) { force.Z += moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.A)) { force.X -= moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.S)) { force.Z -= moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.D)) { force.X += moveSpeed; }
+
+            force = moveSpeed * body.GetLinearVelocity();
+
+            body.AddForce(force);
         }
     }
 }

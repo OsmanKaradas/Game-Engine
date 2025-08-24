@@ -68,30 +68,21 @@ namespace GameEngine.World
         {
             List<Vector3> normals = new List<Vector3>(new Vector3[vertices.Count]);
 
-            // Loop over triangles
             for (int i = 0; i < indices.Count; i += 3)
             {
-                int i0 = (int)indices[i];
-                int i1 = (int)indices[i + 1];
-                int i2 = (int)indices[i + 2];
+                Vector3 v1 = vertices[(int)indices[i]];
+                Vector3 v2 = vertices[(int)indices[i + 1]];
+                Vector3 v3 = vertices[(int)indices[i + 2]];
 
-                Vector3 v0 = vertices[i0];
-                Vector3 v1 = vertices[i1];
-                Vector3 v2 = vertices[i2];
+                Vector3 u = v2 - v1;
+                Vector3 v = v3 - v1;
 
-                Vector3 edge1 = v1 - v0;
-                Vector3 edge2 = v2 - v0;
-                Vector3 faceNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+                Vector3 normal = Vector3.Cross(u, v);
+                normal = Vector3.Normalize(normal);
 
-                normals[i0] += faceNormal;
-                normals[i1] += faceNormal;
-                normals[i2] += faceNormal;
-            }
-
-            // Normalize all vertex normals
-            for (int i = 0; i < normals.Count; i++)
-            {
-                normals[i] = Vector3.Normalize(normals[i]);
+                normals[(int)indices[i]] += normal;
+                normals[(int)indices[i + 1]] += normal;
+                normals[(int)indices[i + 2]] += normal;         
             }
 
             return normals;
@@ -381,3 +372,36 @@ namespace GameEngine.World
         }
     }
 }
+
+/*        public static List<Vector3> CalculateSmoothNormals(List<Vector3> vertices, List<uint> indices)
+        {
+            List<Vector3> normals = new List<Vector3>(new Vector3[vertices.Count]);
+
+            // Loop over triangles
+            for (int i = 0; i < indices.Count; i += 3)
+            {
+                int i0 = (int)indices[i];
+                int i1 = (int)indices[i + 1];
+                int i2 = (int)indices[i + 2];
+
+                Vector3 v0 = vertices[i0];
+                Vector3 v1 = vertices[i1];
+                Vector3 v2 = vertices[i2];
+
+                Vector3 edge1 = v1 - v0;
+                Vector3 edge2 = v2 - v0;
+                Vector3 faceNormal = Vector3.Normalize(Vector3.Cross(edge1, edge2));
+
+                normals[i0] += faceNormal;
+                normals[i1] += faceNormal;
+                normals[i2] += faceNormal;
+            }
+
+            // Normalize all vertex normals
+            for (int i = 0; i < normals.Count; i++)
+            {
+                normals[i] = Vector3.Normalize(normals[i]);
+            }
+
+            return normals;
+        }*/

@@ -84,3 +84,7 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/joltc_double.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/light.frag
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/light.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/GeometryPass.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/GeometryPass.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPass.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPass.vert

@@ -77,8 +77,8 @@ namespace GameEngine
             int viewLocation = GetUniformLocation(ID, "view");
             int projectionLocation = GetUniformLocation(ID, "projection");
 
-            UniformMatrix4(viewLocation, true, ref view);
-            UniformMatrix4(projectionLocation, true, ref projection); 
+            UniformMatrix4(viewLocation, false, ref view);
+            UniformMatrix4(projectionLocation, false, ref projection); 
         }
 
         public void SetVector4(string name, Vector4 value)

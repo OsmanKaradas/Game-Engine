@@ -1,6 +1,7 @@
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using GameEngine.Physics;
 
 namespace GameEngine.World
@@ -12,11 +13,10 @@ namespace GameEngine.World
         public Quaternion rotation;
         public Vector3 scale;
 
-        public Vector3 color;
         public Material material;
         public Texture diffuseTex = null!;
         public Texture specularTex = null!;
-        public Rigidbody? rigidbody;
+        public Rigidbody rigidbody = null!;
         public OBB obbBounds;
         public Vector3 worldMin;
         public Vector3 worldMax;
@@ -27,18 +27,19 @@ namespace GameEngine.World
         public Vector3 up = Vector3.UnitY;
         public static List<GameObject> gameObjects = new();
 
-        public GameObject(Mesh mesh, Vector3 position, Material material, Rigidbody? rigidbody = null, Vector3? scale = null)
+        public GameObject(Mesh mesh, Vector3 position, Quaternion rotation, Material material, Rigidbody? rigidbody = null, Vector3? scale = null)
         {
             this.mesh = mesh;
             this.position = position;
-            rotation = Quaternion.Identity;
+            this.rotation = rotation;
             this.scale = scale ?? Vector3.One;
             this.material = material;
-            this.rigidbody = rigidbody;
+
             if (rigidbody != null)
             {
+                this.rigidbody = rigidbody;
                 Vector3 colliderSize = this.scale * mesh.size;
-                rigidbody.Setup(position, rotation, colliderSize);
+                rigidbody.Initialize(position, rotation, colliderSize);
             }
 
             gameObjects.Add(this);
@@ -51,24 +52,23 @@ namespace GameEngine.World
                 Matrix4.CreateFromQuaternion(new Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
                 Matrix4.CreateTranslation(position);
         }
-        
+
         public static void Render(ShaderProgram shader)
         {
             foreach (GameObject obj in gameObjects)
             {
                 if (obj.position.Y < -50f)
-                    return;
+                    continue;
 
                 Matrix4 model = obj.GetModelMatrix();
-
-                shader.SetVector3("objectColor", obj.color);
                 obj.material.Render(shader);
-                UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
+                UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
 
-                obj.Update();
+                obj.UpdateTransform();
 
-                obj.mesh.Render();            
+                obj.mesh.Render();
             }
+
         }
 
         public static void RenderUnlit(ShaderProgram shader)
@@ -79,28 +79,24 @@ namespace GameEngine.World
                     return;
 
                 Matrix4 model = obj.GetModelMatrix();
-
                 obj.material.Render(shader);
-                shader.SetVector3("objectColor", obj.color);
-                UniformMatrix4(GetUniformLocation(shader.ID, "model"), true, ref model);
+                UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
 
-                obj.Update();
+                obj.UpdateTransform();
 
-                obj.mesh.Render();            
+                obj.mesh.Render();
             }
         }
 
         public void UpdateBounds()
         {
-            
+
             worldMin = position - obbBounds.halfSize;
             worldMax = position + obbBounds.halfSize;
 
-            // update OBB for SAT:
             obbBounds.center = position;
             obbBounds.halfSize = scale * 0.5f;
 
-            // compute axes from rotation quaternion
             obbBounds.axes = new Vector3[3];
             obbBounds.axes[0] = Vector3.Transform(Vector3.UnitX, rotation).Normalized();
             obbBounds.axes[1] = Vector3.Transform(Vector3.UnitY, rotation).Normalized();
@@ -108,11 +104,11 @@ namespace GameEngine.World
 
         }
 
-        public void Update()
+        public void UpdateTransform()
         {
             if (rigidbody != null)
             {
-                rigidbody.Update();
+                rigidbody.UpdateTransform();
                 position = new Vector3(rigidbody.position.X, rigidbody.position.Y, rigidbody.position.Z);
                 rotation = new Quaternion(rigidbody.rotation.X, rigidbody.rotation.Y, rigidbody.rotation.Z, rigidbody.rotation.W);
             }

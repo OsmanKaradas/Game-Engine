@@ -18,13 +18,13 @@ namespace GameEngine
 
         // position vars
         public Vector3 position;
-        Vector3 up = Vector3.UnitY;
-        Vector3 front = -Vector3.UnitZ;
-        Vector3 right = Vector3.UnitX;
+        public Vector3 up = new Vector3(0f, 1f, 0f);
+        public Vector3 front = new Vector3(0f, 0f, -1f);
+        public Vector3 right = new Vector3(1f, 0f, 0f);
 
         // view rotations
-        private float pitch;
-        private float yaw = -90.0f;
+        public float pitch;
+        public float yaw = -90.0f;
 
         public Camera(float width, float height, Vector3 position)
         {

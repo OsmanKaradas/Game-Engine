@@ -19,7 +19,7 @@ namespace GameEngine.Physics
             this.owner = owner;
             this.isStatic = isStatic;
             velocity = Vector3.Zero;
-            initialColor = owner.color;
+            initialColor = owner.material.color;
         }
 
         public void Update(float deltaTime, List<RigidbodyPrototype> others)
@@ -50,10 +50,10 @@ namespace GameEngine.Physics
                     velocity -= velAlongNormal * mtvNormal;
 
                 if (!other.isStatic)
-                    owner.color = new Vector3(1f, 0f, 0f);
+                    owner.material.color = new Vector3(1f, 0f, 0f);
                 return true;
             }
-            owner.color = initialColor;
+            owner.material.color = initialColor;
             collided = false;
             return false;
         }
