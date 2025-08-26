@@ -1,4 +1,5 @@
 #version 330 core
+
 out vec4 FragColor;
 
 in vec2 uv;
@@ -6,6 +7,8 @@ in vec2 uv;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gMaterial;
+uniform sampler2D gDepth;
+uniform sampler2D shadowMap;
 
 struct DirectionalLight {
     vec3 direction;
@@ -39,7 +42,35 @@ uniform SpotLight spotLights[NR_LIGHTS];
 
 uniform int pointLightCount;
 uniform int spotLightCount;
+
+uniform mat4 lightSpaceMatrix;
 uniform vec3 viewPos;
+
+float CalcShadow(vec3 fragPos, vec3 normal)
+{
+    vec4 fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float bias = max(0.005 * (1.0 - dot(normal, normalize(-directionalLight.direction))), 0.0005);
+    
+    float shadow = 0.0f;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+    if(projCoords.z > 1.0) shadow = 0.0;
+    return shadow;
+}
 
 vec3 CalcDirectionalLight(vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiffuse, float inSpecular)
 {
@@ -52,13 +83,15 @@ vec3 CalcDirectionalLight(vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiff
     float spec = pow(max(dot(inViewDir, reflectDir), 0.0), 32.0);
     vec3 specular = directionalLight.color * (spec * inSpecular);
 
-    return (diffuse + specular);
+    float shadow = CalcShadow(fragPos, normal);
+
+    return (diffuse + specular) * (1.0 - shadow);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiffuse, float inSpecular)
 {
     vec3 lightDir = normalize(light.position - fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 halfwayDir = normalize(lightDir + inViewDir);
 
     float distance = length(light.position - fragPos);
 
@@ -69,34 +102,33 @@ vec3 CalcPointLight(PointLight light, vec3 fragPos, vec3 normal, vec3 inViewDir,
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = diff * inDiffuse * light.color * intensity;
 
-    float spec = pow(max(dot(inViewDir, reflectDir), 0.0), 32.0);
+    float spec = pow(max(dot(inViewDir, halfwayDir), 0.0), 32.0);
     vec3 specular = light.color * (spec * inSpecular) * intensity;
 
     return diffuse + specular;
 }
 
-vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiffuse, float inSpecular)
+vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiffuse, vec3 inSpecular)
 {
     vec3 lightDir = normalize(light.position - fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-
-    float distance = length(light.position - fragPos);
-    float linear   = 0.045;
-    float squared= 0.0075;
-    float intensity = 1.0 / (1.0 + linear * distance + squared * (distance * distance));
+    vec3 halfwayDir = normalize(lightDir + inViewDir);
 
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * inDiffuse * light.color * intensity;
 
-    
-    float spec = pow(max(dot(inViewDir, reflectDir), 0.0), 32.0);
-    vec3 specular = light.color * (spec * inSpecular) * intensity;
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
-    float angle = dot(-lightDir, light.direction);
-    float inten = clamp((angle - light.outerCone) / (light.innerCone - light.outerCone), 0.0f, 1.0f);
+    float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = light.innerCone - light.outerCone;
+    float intensity = clamp((theta - light.outerCone) / epsilon, 0.0, 1.0);
 
-    return (diffuse + specular) * inten;
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0 / (1.0 + light.linear * distance + light.squared * (distance * distance));
+
+    vec3 result = (intensity * (inDiffuse * diff + inSpecular * spec) * light.color) * attenuation;
+
+    return result;
 }
+
 
 void main()
 {
@@ -107,7 +139,7 @@ void main()
 
     vec3 viewDir = normalize(viewPos - FragPos);
     
-    vec3 lighting = Diffuse * 0.2f;
+    vec3 lighting = Diffuse * 0.1f;
 
     lighting += CalcDirectionalLight(FragPos, Normal, viewDir, Diffuse, Specular);
     for(int i = 0; i < pointLightCount; i++)
@@ -115,11 +147,10 @@ void main()
         lighting += CalcPointLight(pointLights[i], FragPos, Normal, viewDir, Diffuse, Specular);
     }
 
-    /*for(int i = 0; i < spotLightCount; i++)
+    for(int i = 0; i < spotLightCount; i++)
     {
-        lighting += CalcSpotLight(spotLights[i], FragPos, Normal, viewDir, Diffuse, Specular);    
-    }*/
-    //lighting += CalcSpotLight(spotLights[0], FragPos, Normal, viewDir, Diffuse, Specular);
+        //lighting += CalcSpotLight(spotLights[i], FragPos, Normal, viewDir, Diffuse, vec3(Specular));    
+    }
 
     FragColor = vec4(lighting, 1.0);
 }

@@ -48,13 +48,6 @@ namespace GameEngine.World
 
             vao.Unbind();
         }
-
-        public void Delete()
-        {
-            vao.Delete();
-            vbo.Delete();
-            ibo.Delete();
-        }
     }
 
     public class MeshData

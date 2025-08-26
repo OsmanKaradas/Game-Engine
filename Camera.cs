@@ -11,8 +11,8 @@ namespace GameEngine
     {
         public bool cameraMode = true;
         public float speed = 8f;
-        private float SCREENWIDTH;
-        private float SCREENHEIGHT;
+        public float SCREENWIDTH;
+        public float SCREENHEIGHT;
         private float SENSITIVITY = 40f;
         private float FOV = 45f;
 

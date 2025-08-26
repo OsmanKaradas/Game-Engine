@@ -65,7 +65,7 @@ namespace GameEngine.World
 
                 obj.mesh.buffers.vao.Bind();
                 obj.mesh.buffers.ibo.Bind();
-                
+
                 DrawElements(PrimitiveType.Triangles, obj.mesh.meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
                 obj.mesh.buffers.vao.Unbind();
             }
@@ -78,6 +78,16 @@ namespace GameEngine.World
                 rigidbody.UpdateTransform();
                 position = new Vector3(rigidbody.position.X, rigidbody.position.Y, rigidbody.position.Z);
                 rotation = new Quaternion(rigidbody.rotation.X, rigidbody.rotation.Y, rigidbody.rotation.Z, rigidbody.rotation.W);
+            }
+        }
+
+        public static void Delete()
+        {
+            foreach (GameObject obj in gameObjects)
+            {
+                obj.mesh.buffers.vao.Delete();
+                obj.mesh.buffers.vbo.Delete();
+                obj.mesh.buffers.ibo.Delete();
             }
         }
     }

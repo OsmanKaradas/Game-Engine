@@ -13,6 +13,7 @@ namespace GameEngine.Physics
             Sphere,
             Floor
         }
+        public JoltPhysics physics;
         public System.Numerics.Vector3 position;
         public System.Numerics.Quaternion rotation;
         public System.Numerics.Vector3 scale;
@@ -24,12 +25,12 @@ namespace GameEngine.Physics
 
         public float speed = 8f;
         private float moveSpeed;
-        private System.Numerics.Vector3 force;
 
         private bool initialized;
 
-        public Rigidbody(BodyType bodyType, bool isStatic)
+        public Rigidbody(JoltPhysics physics, BodyType bodyType, bool isStatic)
         {
+            this.physics = physics;
             this.bodyType = bodyType;
             this.isStatic = isStatic;
         }
@@ -61,7 +62,7 @@ namespace GameEngine.Physics
             if (!initialized)
                 return;
 
-            var transform = Game.physics.BodyInterface.GetTransformedShape(Game.physics.BodyLockInterface, bodyID);
+            var transform = physics.BodyInterface.GetTransformedShape(physics.BodyLockInterface, bodyID);
 
             position = transform.ShapePositionCOM;
             rotation = transform.ShapeRotation;
@@ -69,7 +70,7 @@ namespace GameEngine.Physics
 
         private Body CreateBoxRigidbody()
         {
-            Body box = Game.physics.CreateBox(
+            Body box =  physics.CreateBox(
                 scale * 0.5f,
                 position,
                 rotation,
@@ -83,7 +84,7 @@ namespace GameEngine.Physics
 
         private Body CreateSphereRigidbody()
         {
-            Body sphere = Game.physics.CreateSphere(
+            Body sphere = physics.CreateSphere(
                 0.7f,
                 position,
                 rotation,
@@ -95,21 +96,23 @@ namespace GameEngine.Physics
             return sphere;
         }
 
-        public void Move(KeyboardState keyboardInput)
+        public void Move(KeyboardState keyboardInput, float deltaTime)
         {
             if (!initialized)
                 return;
-            
-            moveSpeed = speed;
 
-            if (keyboardInput.IsKeyDown(Keys.LeftControl)) { moveSpeed *= 1.25f; }
+            moveSpeed = speed * deltaTime;
 
-            if (keyboardInput.IsKeyDown(Keys.W)) { force.Z += moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.A)) { force.X -= moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.S)) { force.Z -= moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.D)) { force.X += moveSpeed; }
+            Console.WriteLine(moveSpeed);
 
-            force = moveSpeed * body.GetLinearVelocity();
+            System.Numerics.Vector3 force = System.Numerics.Vector3.Zero;
+
+            //if (keyboardInput.IsKeyDown(Keys.RightControl)) { moveSpeed *= 1.25f; }
+
+            if (keyboardInput.IsKeyDown(Keys.Up)) { force.Z += moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.Left)) { force.X -= moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.Down)) { force.Z -= moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.Right)) { force.X += moveSpeed; }
 
             body.AddForce(force);
         }
