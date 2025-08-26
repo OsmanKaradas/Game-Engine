@@ -35,10 +35,6 @@ namespace GameEngine.Graphics
 
             LinkProgram(ID);
 
-            // Materials
-            this.SetInt("material.diffuseTex", 0);
-            this.SetInt("material.specularTex", 1);
-
             DeleteShader(vertexShader);
             DeleteShader(fragmentShader);
         }

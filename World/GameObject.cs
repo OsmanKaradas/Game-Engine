@@ -15,17 +15,12 @@ namespace GameEngine.World
         public Vector3 scale;
 
         public Material material;
-        public Texture diffuseTex = null!;
-        public Texture specularTex = null!;
         public Rigidbody rigidbody = null!;
-        public OBB obbBounds;
+
         public Vector3 worldMin;
         public Vector3 worldMax;
         public string tag = "";
 
-        public Vector3 front = -Vector3.UnitZ;
-        public Vector3 right = Vector3.UnitX;
-        public Vector3 up = Vector3.UnitY;
         public static List<GameObject> gameObjects = new();
 
         public GameObject(Mesh mesh, Vector3 position, Quaternion rotation, Material material, Rigidbody? rigidbody = null, Vector3? scale = null)
@@ -74,22 +69,6 @@ namespace GameEngine.World
                 DrawElements(PrimitiveType.Triangles, obj.mesh.meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
                 obj.mesh.buffers.vao.Unbind();
             }
-        }
-
-        public void UpdateBounds()
-        {
-
-            worldMin = position - obbBounds.halfSize;
-            worldMax = position + obbBounds.halfSize;
-
-            obbBounds.center = position;
-            obbBounds.halfSize = scale * 0.5f;
-
-            obbBounds.axes = new Vector3[3];
-            obbBounds.axes[0] = Vector3.Transform(Vector3.UnitX, rotation).Normalized();
-            obbBounds.axes[1] = Vector3.Transform(Vector3.UnitY, rotation).Normalized();
-            obbBounds.axes[2] = Vector3.Transform(Vector3.UnitZ, rotation).Normalized();
-
         }
 
         public void UpdateTransform()
