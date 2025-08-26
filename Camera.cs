@@ -10,11 +10,11 @@ namespace GameEngine
     public class Camera
     {
         public bool cameraMode = true;
-        private float SPEED = 8f;
+        public float speed = 8f;
         private float SCREENWIDTH;
         private float SCREENHEIGHT;
-        private float SENSITIVITY = 0.1f;
-        private float DEPTH_OF_FIELD = 45f;
+        private float SENSITIVITY = 40f;
+        private float FOV = 45f;
 
         // position vars
         public Vector3 position;
@@ -23,7 +23,7 @@ namespace GameEngine
         public Vector3 right = new Vector3(1f, 0f, 0f);
 
         // view rotations
-        public float pitch;
+        public float pitch = 0f;
         public float yaw = -90.0f;
 
         public Camera(float width, float height, Vector3 position)
@@ -40,7 +40,7 @@ namespace GameEngine
 
         public Matrix4 GetProjectionMatrix()
         {
-            return Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(DEPTH_OF_FIELD), SCREENWIDTH / SCREENHEIGHT, 0.1f, 100f);
+            return Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(FOV), SCREENWIDTH / SCREENHEIGHT, 0.1f, 100f);
         }
 
         private void UpdateVectors()
@@ -62,7 +62,7 @@ namespace GameEngine
         public void InputController(KeyboardState input, MouseState mouse, FrameEventArgs e)
         {
             float deltaTime = (float)e.Time;
-            float velocity = SPEED * deltaTime;
+            float velocity = speed * deltaTime;
 
             if (cameraMode)
             {
@@ -104,8 +104,8 @@ namespace GameEngine
             if (input.IsKeyPressed(Keys.F))
                 cameraMode = !cameraMode;
 
-            yaw += mouse.Delta.X * SENSITIVITY;
-            pitch -= mouse.Delta.Y * SENSITIVITY;
+            yaw += mouse.Delta.X * SENSITIVITY * deltaTime;
+            pitch -= mouse.Delta.Y * SENSITIVITY * deltaTime;
 
             UpdateVectors();
         }

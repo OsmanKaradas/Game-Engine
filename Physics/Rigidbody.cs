@@ -99,8 +99,6 @@ namespace GameEngine.Physics
         {
             if (!initialized)
                 return;
-
-            Vector3 newPos;
             
             moveSpeed = speed;
 

@@ -2,6 +2,7 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
+using GameEngine.Graphics;
 
 namespace GameEngine.World
 {
@@ -46,6 +47,13 @@ namespace GameEngine.World
             ibo = new IBO(meshData.Indices);
 
             vao.Unbind();
+        }
+
+        public void Delete()
+        {
+            vao.Delete();
+            vbo.Delete();
+            ibo.Delete();
         }
     }
 

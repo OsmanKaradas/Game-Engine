@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using GameEngine.Physics;
+using GameEngine.Graphics;
 
 namespace GameEngine.World
 {
@@ -61,30 +62,17 @@ namespace GameEngine.World
                     continue;
 
                 Matrix4 model = obj.GetModelMatrix();
-                obj.material.Render(shader);
                 UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
+                shader.SetVector3("inColor", obj.material.color);
+                obj.material.Render(shader);
 
                 obj.UpdateTransform();
 
-                obj.mesh.Render();
-            }
-
-        }
-
-        public static void RenderUnlit(ShaderProgram shader)
-        {
-            foreach (GameObject obj in gameObjects)
-            {
-                if (obj.position.Y < -50f)
-                    return;
-
-                Matrix4 model = obj.GetModelMatrix();
-                obj.material.Render(shader);
-                UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
-
-                obj.UpdateTransform();
-
-                obj.mesh.Render();
+                obj.mesh.buffers.vao.Bind();
+                obj.mesh.buffers.ibo.Bind();
+                
+                DrawElements(PrimitiveType.Triangles, obj.mesh.meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
+                obj.mesh.buffers.vao.Unbind();
             }
         }
 

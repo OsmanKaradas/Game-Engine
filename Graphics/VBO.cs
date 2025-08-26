@@ -3,7 +3,7 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
 
-namespace GameEngine
+namespace GameEngine.Graphics
 {
     public class VBO
     {

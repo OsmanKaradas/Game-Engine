@@ -88,3 +88,5 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/GeometryPass.vert
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPass.frag
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPass.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/Test.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/Test.vert

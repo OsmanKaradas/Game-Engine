@@ -4,7 +4,7 @@ using OpenTK.Graphics.OpenGL4;
 using static OpenTK.Graphics.OpenGL4.GL;
 using StbImageSharp;
 
-namespace GameEngine
+namespace GameEngine.Graphics
 {
     public class Texture
     {

@@ -1,4 +1,5 @@
 using OpenTK.Mathematics;
+using GameEngine.Graphics;
 
 namespace GameEngine.World
 {
