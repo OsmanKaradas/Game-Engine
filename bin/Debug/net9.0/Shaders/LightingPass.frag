@@ -72,16 +72,20 @@ float CalcShadow(vec3 fragPos, vec3 normal)
     return shadow;
 }
 
-vec3 CalcDirectionalLight(vec3 fragPos, vec3 normal, vec3 viewDir, vec3 diffuse, float specular) {
+vec3 CalcDirectionalLight(vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiffuse, float inSpecular)
+{
     vec3 lightDir = normalize(-directionalLight.direction);
     vec3 reflectDir = reflect(-lightDir, normal);
 
     float diff = max(dot(normal, lightDir), 0.0);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 diffuse = diff * inDiffuse * directionalLight.color;
 
-    vec3 color = directionalLight.color * (diff * diffuse + spec * specular);
+    float spec = pow(max(dot(inViewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = directionalLight.color * (spec * inSpecular);
+
     float shadow = CalcShadow(fragPos, normal);
-    return color * (1.0 - shadow);
+
+    return (diffuse + specular) * (1.0 - shadow);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 fragPos, vec3 normal, vec3 inViewDir, vec3 inDiffuse, float inSpecular)

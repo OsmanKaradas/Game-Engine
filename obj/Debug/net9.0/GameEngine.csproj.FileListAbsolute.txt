@@ -92,3 +92,5 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/Test.vert
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/ShadowPass.frag
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/ShadowPass.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPassTest.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPassTest.vert

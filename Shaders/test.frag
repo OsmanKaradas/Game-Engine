@@ -2,16 +2,15 @@
 
 out vec4 FragColor;
 
-in vec3 fragPos;
-in vec3 color;
-in vec2 uv;
-in vec3 normal;
+//in vec3 fragPos;
+//in vec3 normal;
+//in vec2 uv;
 
-uniform vec3 viewPos;
+//uniform vec3 viewPos;
 
-uniform sampler2D texture0;
+uniform vec3 inColor;
 
-vec4 CalcDirectionalLight()
+/*vec4 CalcDirectionalLight()
 {
     float light_ambient = 0.2f;
     float light_diffuse = 0.5f;
@@ -29,10 +28,10 @@ vec4 CalcDirectionalLight()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16.0f);
     float specular = spec * light_specular;
 
-    return vec4(color, 1.0f) * (ambient + diffuse + specular);
-}
+    return vec4(inColor, 1.0f) * (ambient + diffuse + specular);
+}*/
 
 void main()
 {  
-    FragColor = vec4(color, 1.0f);
+    FragColor = vec4(inColor, 1.0f);
 }

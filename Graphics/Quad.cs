@@ -8,14 +8,11 @@ namespace GameEngine.Graphics
     {
         private List<float> vertices = new List<float>
         {
-            // positions   // texcoords
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            -1.0f, -1.0f,  0.0f, 0.0f,
-            1.0f, -1.0f,  1.0f, 0.0f,
-
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            1.0f, -1.0f,  1.0f, 0.0f,
-            1.0f,  1.0f,  1.0f, 1.0f
+            // positions    // uv
+            -1.0f,  1.0f,   0.0f, 1.0f,
+            -1.0f, -1.0f,   0.0f, 0.0f,
+             1.0f, 1.0f,    1.0f, 1.0f,
+             1.0f,  -1.0f,  1.0f, 0.0f
         };
 
         VAO vao;
@@ -36,7 +33,7 @@ namespace GameEngine.Graphics
             Disable(EnableCap.DepthTest);
             vao.Bind();
 
-            DrawArrays(PrimitiveType.Triangles, 0, vertices.Count);
+            DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
 
             vao.Unbind();
             Enable(EnableCap.DepthTest);

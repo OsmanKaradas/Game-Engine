@@ -112,6 +112,12 @@ namespace GameEngine.Graphics
             int location = GetUniformLocation(ID, name);
             Uniform1(location, value ? 1 : 0);
         }
+
+        public void SetMatrix4(string name, Matrix4 value)
+        {
+            int location = GetUniformLocation(ID, name);
+            UniformMatrix4(location, false, ref value);
+        }
     }
 }
 

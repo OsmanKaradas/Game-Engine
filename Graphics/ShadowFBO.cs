@@ -20,7 +20,7 @@ namespace GameEngine.Graphics
             // POSITION
             shadowMap = GenTexture();
             BindTexture(TextureTarget.Texture2D, shadowMap);
-            TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, 0);
+            TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent24, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, 0);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
@@ -33,13 +33,11 @@ namespace GameEngine.Graphics
             FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, shadowMap, 0);
             DrawBuffer(DrawBufferMode.None);
             ReadBuffer(ReadBufferMode.None);
-            Unbind();
 
             // Check completeness
             var status = CheckFramebufferStatus(FramebufferTarget.Framebuffer);
             if (status != FramebufferErrorCode.FramebufferComplete)
                 throw new Exception($"GBuffer incomplete: {status}");
-                    Bind();
             Unbind();
         }
 

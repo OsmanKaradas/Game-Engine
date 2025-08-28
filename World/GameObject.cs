@@ -51,24 +51,26 @@ namespace GameEngine.World
 
         public static void Render(ShaderProgram shader)
         {
+            if (gameObjects.Count == 0)
+                Console.WriteLine("There are no gameobjects to render!");
             foreach (GameObject obj in gameObjects)
-            {
-                if (obj.position.Y < -50f)
-                    continue;
+                {
+                    if (obj.position.Y < -50f)
+                        continue;
 
-                Matrix4 model = obj.GetModelMatrix();
-                UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
-                shader.SetVector3("inColor", obj.material.color);
-                obj.material.Render(shader);
+                    Matrix4 model = obj.GetModelMatrix();
+                    UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
+                    shader.SetVector3("inColor", obj.material.color);
+                    obj.material.Render(shader);
 
-                obj.UpdateTransform();
+                    obj.UpdateTransform();
 
-                obj.mesh.buffers.vao.Bind();
-                obj.mesh.buffers.ibo.Bind();
+                    obj.mesh.buffers.vao.Bind();
+                    obj.mesh.buffers.ibo.Bind();
 
-                DrawElements(PrimitiveType.Triangles, obj.mesh.meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
-                obj.mesh.buffers.vao.Unbind();
-            }
+                    DrawElements(PrimitiveType.Triangles, obj.mesh.meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
+                    obj.mesh.buffers.vao.Unbind();
+                }
         }
 
         public void UpdateTransform()

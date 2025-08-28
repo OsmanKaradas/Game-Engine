@@ -60,7 +60,7 @@ namespace GameEngine
 
         Matrix4 lightSpaceMatrix;
         Vector3 lightPos = new Vector3(0f, 5f, 0f);
-        Vector3 lightDir = new Vector3(-0.2f, -1f, -0.5f).Normalized();
+        Vector3 lightDir = new Vector3(-0.2f, -1f, -0.5f);
         Mesh cubeMesh = null!;
         Camera camera = null!;
         int width;
@@ -144,16 +144,19 @@ namespace GameEngine
             Viewport(0, 0, shadowFBO.width, shadowFBO.height);
             shadowFBO.Bind();
             Clear(ClearBufferMask.DepthBufferBit);
-
+            Enable(EnableCap.CullFace);
+            CullFace(TriangleFace.Front);
             UseProgram(shadowShader.ID);
-            float near_plane = 1f, far_plane = 20f;
-            Matrix4 lightProjection = Matrix4.CreateOrthographic(20f, 20f, near_plane, far_plane);
+            float near = 1f, far = 20f;
+            Matrix4 lightProjection = Matrix4.CreateOrthographic(20f, 20f, near, far);
             Matrix4 lightView = Matrix4.LookAt(-lightDir * 10f, Vector3.Zero, Vector3.UnitY);
-            lightSpaceMatrix = lightView * lightProjection;
+            lightSpaceMatrix = lightProjection * lightView;
             UniformMatrix4(GetUniformLocation(shadowShader.ID, "lightSpaceMatrix"), false, ref lightSpaceMatrix);
 
             GameObject.Render(shadowShader);
             shadowFBO.Unbind();
+            CullFace(TriangleFace.Back);
+            
             // --- GEOMETRY RENDER ---
             fbo.Bind();
             Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
