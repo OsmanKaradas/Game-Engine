@@ -19,6 +19,7 @@ public static class Time
             fps = Convert.ToInt32(frames / timer);
             timer = 0f;
             frames = 0;
+            Console.WriteLine(fps);
         }
     }
 }

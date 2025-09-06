@@ -101,7 +101,7 @@ namespace GameEngine
 
             geometryPass = new GeometryPass("GeometryPass.vert", "GeometryPass.frag", width, height);
             lightingPass = new LightingPass("LightingPass.vert", "LightingPass.frag", quad);
-            shadowPass = new ShadowPass("ShadowPass.vert", "ShadowPass.frag");
+            shadowPass = new ShadowPass("ShadowPass.vert", "ShadowPass.frag", "ShadowPass.geom");
             lightShader = new ShaderProgram("light.vert", "light.frag");
 
             UseProgram(lightShader.ID);
@@ -153,11 +153,11 @@ namespace GameEngine
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            shadowPass.Render(width, height);
+            shadowPass.RenderDirLightShadows();
 
             geometryPass.Render(camera);
 
-            lightingPass.Render(geometryPass.fbo, shadowPass.fbo, shadowPass.lightSpaceMatrix);
+            lightingPass.Render(geometryPass, shadowPass);
 
             // --- LIGHT OBJECT RENDER ---
             lightShader.Render(camera);

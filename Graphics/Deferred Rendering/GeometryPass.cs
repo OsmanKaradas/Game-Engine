@@ -24,8 +24,16 @@ namespace GameEngine.Graphics
             Viewport(0, 0, width, height);
             fbo.Bind();
             Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            shader.Render(camera);
+
+            Matrix4 projection = camera.GetProjectionMatrix();
+            Matrix4 view = camera.GetViewMatrix();
+
+            UseProgram(shader.ID);
+            shader.SetMatrix4("projection", projection);
+            shader.SetMatrix4("view", view);
+             
             GameObject.Render(shader);
+            
             fbo.Unbind();
         }
     }

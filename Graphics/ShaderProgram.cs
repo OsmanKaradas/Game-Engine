@@ -9,30 +9,27 @@ namespace GameEngine.Graphics
     {
         public int ID;
         private static List<ShaderProgram> shaders = new List<ShaderProgram>();
-        public ShaderProgram(string vertexShaderFilePath, string fragmentShaderFilePath)
+        public ShaderProgram(string vertexShaderFilePath, string fragmentShaderFilePath, string? geometryShaderFilePath = null)
         {
             ID = CreateProgram();
 
-            // vertex shader
-
             int vertexShader = CreateShader(ShaderType.VertexShader);
-
-            // add the source code from "Default.vert" in the Shaders file
             ShaderSource(vertexShader, LoadShaderSource(vertexShaderFilePath));
-
             CompileShader(vertexShader);
-
-            // fragment shader
+            AttachShader(ID, vertexShader);
 
             int fragmentShader = CreateShader(ShaderType.FragmentShader);
-
-            // add the source code from "Default.frag" in the Shaders file
             ShaderSource(fragmentShader, LoadShaderSource(fragmentShaderFilePath));
-
             CompileShader(fragmentShader);
-
-            AttachShader(ID, vertexShader);
             AttachShader(ID, fragmentShader);
+
+            if (geometryShaderFilePath != null)
+            {
+                int geometryShader = CreateShader(ShaderType.GeometryShader);
+                ShaderSource(geometryShader, LoadShaderSource(geometryShaderFilePath));
+                CompileShader(geometryShader);
+                AttachShader(ID, geometryShader);
+            }
 
             LinkProgram(ID);
 
@@ -51,13 +48,13 @@ namespace GameEngine.Graphics
             foreach (ShaderProgram shader in shaders)
                 DeleteProgram(shader.ID);
         }
-        public static string LoadShaderSource(string fileName)
+        public static string LoadShaderSource(string filePath)
         {
-            string shaderPath = Path.Combine(AppContext.BaseDirectory, "Shaders", fileName);
+            string shaderPath = Path.Combine(AppContext.BaseDirectory, "Shaders", filePath);
 
             try
             {
-                return File.ReadAllText(shaderPath);
+                return File.ReadAllText("Shaders/" + filePath);
             }
             catch (Exception e)
             {

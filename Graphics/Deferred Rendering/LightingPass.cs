@@ -21,29 +21,33 @@ namespace GameEngine.Graphics
             shader.SetInt("gMaterial", 2);
             shader.SetInt("gDepth", 3);
             shader.SetInt("depthMap", 4);
+            shader.SetInt("depthCubeMap", 5);
 
             this.quad = quad;
         }
 
-        public void Render(FBO fbo, ShadowFBO shadowFBO, Matrix4 lightSpaceMatrix)
+        public void Render(GeometryPass geometryPass, ShadowPass shadowPass)
         {
             Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             ActiveTexture(TextureUnit.Texture0);
-            BindTexture(TextureTarget.Texture2D, fbo.gPosition);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gPosition);
             ActiveTexture(TextureUnit.Texture1);
-            BindTexture(TextureTarget.Texture2D, fbo.gNormal);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gNormal);
             ActiveTexture(TextureUnit.Texture2);
-            BindTexture(TextureTarget.Texture2D, fbo.gMaterial);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gMaterial);
             ActiveTexture(TextureUnit.Texture3);
-            BindTexture(TextureTarget.Texture2D, fbo.gDepth);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gDepth);
             ActiveTexture(TextureUnit.Texture4);
-            BindTexture(TextureTarget.Texture2D, shadowFBO.depthMap);
+            BindTexture(TextureTarget.Texture2D, shadowPass.fbo.depthMap);
+            ActiveTexture(TextureUnit.Texture5);
+            BindTexture(TextureTarget.TextureCubeMap, shadowPass.cubeMapFBO.depthCubeMap);
 
             UseProgram(shader.ID);
-            UniformMatrix4(GetUniformLocation(shader.ID, "lightSpaceMatrix"), false, ref lightSpaceMatrix);
-
+            shader.SetMatrix4("lightSpaceMatrix", shadowPass.lightSpaceMatrix);
+            shader.SetFloat("nearPlane", shadowPass.nearPlane);
+            shader.SetFloat("farPlane", shadowPass.farPlane);
+            
             Light.RenderLights();
 
             quad.Render();

@@ -13,5 +13,5 @@ void main(){
     gPosition = fragPos;
     gNormal = normal;
     gMaterial.rgb = inColor;
-    gMaterial.a = 0.75f;
+    gMaterial.a = 0.5f;
 }

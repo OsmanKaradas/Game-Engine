@@ -51,15 +51,16 @@ namespace GameEngine
             camera = new(width, height, new Vector3(0f, 0f, -3f), 40f);
 
             quad = new();
-            
-            geometryPass = new("GeometryPass.vert", "GeometryPass.frag", width, height);
-            shadowPass = new("ShadowPass.vert", "ShadowPass.frag");
-            lightingPass = new("LightingPass.vert", "LightingPass.frag", quad);
+
+            geometryPass = new("GeometryPass/GeometryPass.vert", "GeometryPass/GeometryPass.frag", width, height);
+            shadowPass = new("ShadowPass/ShadowPass.vert", "ShadowPass/ShadowPass.frag", "ShadowPass/ShadowPass.geom");
+            lightingPass = new("LightingPass/LightingPass.vert", "LightingPass/LightingPass.frag", quad);
 
             Light.shader = lightingPass.shader;
             Light.camera = camera;
-            DirectionalLight directionalLight = new(new(0.25f, 0.25f, 0.25f), new Vector3(-0.45f, -0.625f, -0.75f).Normalized());
-            PointLight pointLight = new(new(0.6f, 0.6f, 0.6f), new(0f, 5f, 2f));
+            DirectionalLight directionalLight = new(new(0.75f, 0.75f, 0.75f), new Vector3(-0.45f, -0.625f, -0.75f).Normalized());
+            PointLight pointLight = new(new(0.5f, 0.5f, 0f), new(0f, 5f, 2f));
+
             guiController = new(width, height);
 
             Mesh cubeMesh = new(World.Type.Cube);
@@ -74,11 +75,12 @@ namespace GameEngine
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            shadowPass.Render(width, height);
+            //shadowPass.RenderPointLightShadows(width, height, Light.pointLights[0].position);
+            shadowPass.RenderDirLightShadows();
 
             geometryPass.Render(camera);
 
-            lightingPass.Render(geometryPass.fbo, shadowPass.fbo, shadowPass.lightSpaceMatrix);
+            lightingPass.Render(geometryPass, shadowPass);
 
             // --- GUI ---
             guiController.Update(this, (float)args.Time);
@@ -109,7 +111,7 @@ namespace GameEngine
             KeyboardState keyboardInput = KeyboardState;
 
             Time.Update(args.Time);
-        
+
             camera.Update(this, keyboardInput, mouseInput, args);
             GameObject.Update();
 

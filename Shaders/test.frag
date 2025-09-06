@@ -2,36 +2,70 @@
 
 out vec4 FragColor;
 
-//in vec3 fragPos;
-//in vec3 normal;
-//in vec2 uv;
+in vec3 fragPos;
+in vec3 normal;
 
-//uniform vec3 viewPos;
+uniform vec3 viewPos;
 
 uniform vec3 inColor;
 
-/*vec4 CalcDirectionalLight()
+struct DirectionalLight
 {
-    float light_ambient = 0.2f;
-    float light_diffuse = 0.5f;
-    float light_specular = 0.5f;
+    vec3 color;
+    vec3 direction;
+};
 
-    vec3 lightDir = normalize(vec3(1.0f, 1.0f, 1.0f));
+struct PointLight
+{
+    vec3 color;
+    vec3 position;
+
+    float linear;
+    float quadratic;
+};
+
+uniform DirectionalLight directionalLight;
+uniform PointLight pointLight;
+
+vec3 CalcDirectionalLight()
+{
+    vec3 lightDir = normalize(-directionalLight.direction);
     vec3 viewDir = normalize(viewPos - fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
 
-    float ambient = light_ambient;
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = (inColor * 0.75f) * diff * directionalLight.color;
+    
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+    vec3 specular =  0.5f * spec * directionalLight.color;
 
-    float diff = max(dot(normal, lightDir), 0.0f);
-    float diffuse = diff * light_diffuse;
+    return(diffuse + specular);
+}
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 16.0f);
-    float specular = spec * light_specular;
+vec3 CalcPointLight(PointLight light)
+{
+    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
 
-    return vec4(inColor, 1.0f) * (ambient + diffuse + specular);
-}*/
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = (inColor * 0.75f) * diff * light.color;
+    
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+    vec3 specular = spec * 0.5f * light.color;
+    
+    float distance = length(light.position - fragPos);
+    float intensity = 1.0 / (1.0 + light.linear * distance + light.quadratic * (distance * distance));
+    
+    return (diffuse + specular) * intensity;
+}
 
 void main()
 {  
-    FragColor = vec4(inColor, 1.0f);
+    vec3 lighting = inColor * 0.4f;
+
+    lighting += CalcDirectionalLight();
+    lighting += CalcPointLight(pointLight);
+
+    FragColor = vec4(lighting, 1.0f);
 }

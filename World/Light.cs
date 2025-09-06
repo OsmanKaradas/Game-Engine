@@ -44,7 +44,7 @@ namespace GameEngine.World
         public DirectionalLight(Vector3 color, Vector3 direction) : base(color)
         {
             this.direction = direction;
-            
+
             directionalLight = this;
         }
 
@@ -83,7 +83,7 @@ namespace GameEngine.World
     {
         public Vector3 position;
         public Vector3 direction;
-        public float innerCone = 0.95f, outerCone = 0.9f;
+        public float innerCone = 0.95f, outerCone = 0.93f;
         public float linear = 0.045f, quadratic = 0.0075f;
 
         public SpotLight(Vector3 color, Vector3 position, Vector3 direction) : base(color)
