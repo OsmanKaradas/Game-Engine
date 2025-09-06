@@ -4,17 +4,25 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
 
 namespace GameEngine
 {
     public class Camera
     {
-        public bool cameraMode = true;
+        public enum Mode
+        {
+            Default,
+            LookAround,
+            Locked
+        }
+        public Mode mode = Mode.Default;
+
         public float speed = 8f;
-        public float SCREENWIDTH;
-        public float SCREENHEIGHT;
-        private float SENSITIVITY = 40f;
-        private float FOV = 45f;
+        public float screenWidth;
+        public float screenHeight;
+        public float sensitivity;
+        public float FOV = 45f;
 
         // position vars
         public Vector3 position;
@@ -26,11 +34,12 @@ namespace GameEngine
         public float pitch = 0f;
         public float yaw = -90.0f;
 
-        public Camera(float width, float height, Vector3 position)
+        public Camera(float screenWidth, float screenHeight, Vector3 position, float sensitivity)
         {
-            SCREENWIDTH = width;
-            SCREENHEIGHT = height;
+            this.screenWidth = screenWidth;
+            this.screenHeight = screenHeight;
             this.position = position;
+            this.sensitivity = sensitivity;
         }
 
         public Matrix4 GetViewMatrix()
@@ -40,15 +49,25 @@ namespace GameEngine
 
         public Matrix4 GetProjectionMatrix()
         {
-            return Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(FOV), SCREENWIDTH / SCREENHEIGHT, 0.1f, 100f);
+            return Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(FOV), screenWidth / screenHeight, 0.1f, 100f);
         }
 
         private void UpdateVectors()
         {
-            // up
-            if (pitch > 89.0f) pitch = 89.0f;
-            // down
-            if (pitch < -89.0f) pitch = -89.0f;
+            if (mode == Mode.Default)
+            {
+                // up
+                if (pitch > 89.0f) pitch = 89.0f;
+                // down
+                if (pitch < -89.0f) pitch = -89.0f;
+            }
+            else if (mode == Mode.LookAround)
+            {
+                // up
+                if (pitch > 10.0f) pitch = 10.0f;
+                // down
+                if (pitch < -30.0f) pitch = -30.0f;                
+            }
 
             front.X = MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Cos(MathHelper.DegreesToRadians(yaw));
             front.Y = MathF.Sin(MathHelper.DegreesToRadians(pitch));
@@ -59,60 +78,70 @@ namespace GameEngine
             right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
             up = Vector3.Normalize(Vector3.Cross(right, front));
         }
-        public void InputController(KeyboardState input, MouseState mouse, FrameEventArgs e)
+        public void Update(GameWindow window, KeyboardState input, MouseState mouse, FrameEventArgs e)
         {
+            UpdateVectors();
             float deltaTime = (float)e.Time;
             float velocity = speed * deltaTime;
-
-            if (cameraMode)
+            
+            switch (mode)
             {
-                // Sprinting
-                if (input.IsKeyDown(Keys.LeftShift))
-                {
-                    velocity *= 7.5f;
-                }
+                case Mode.Default:
+                    if (input.IsKeyDown(Keys.LeftShift))
+                    {
+                        velocity *= 7.5f;
+                    }
 
-                if (input.IsKeyDown(Keys.W))
-                {
-                    position += front * velocity;
-                }
-                if (input.IsKeyDown(Keys.A))
-                {
-                    position -= right * velocity;
-                }
-                if (input.IsKeyDown(Keys.S))
-                {
+                    if (input.IsKeyDown(Keys.W))
+                    {
+                        position += front * velocity;
+                    }
+                    if (input.IsKeyDown(Keys.A))
+                    {
+                        position -= right * velocity;
+                    }
+                    if (input.IsKeyDown(Keys.S))
+                    {
 
-                    position -= front * velocity;
-                }
-                if (input.IsKeyDown(Keys.D))
-                {
-                    position += right * velocity;
-                }
+                        position -= front * velocity;
+                    }
+                    if (input.IsKeyDown(Keys.D))
+                    {
+                        position += right * velocity;
+                    }
 
-                if (input.IsKeyDown(Keys.Space))
-                {
-                    position.Y += velocity;
-                }
+                    if (input.IsKeyDown(Keys.Space))
+                    {
+                        position.Y += velocity;
+                    }
 
-                if (input.IsKeyDown(Keys.X))
-                {
-                    position.Y -= velocity;
-                }
+                    if (input.IsKeyDown(Keys.X))
+                    {
+                        position.Y -= velocity;
+                    }
+
+                    yaw += mouse.Delta.X * sensitivity * deltaTime;
+                    pitch -= mouse.Delta.Y * sensitivity * deltaTime;
+                    window.CursorState = CursorState.Grabbed;
+                    break;
+
+                case Mode.LookAround:
+                    yaw += mouse.Delta.X * sensitivity * deltaTime;
+                    pitch -= mouse.Delta.Y * sensitivity * deltaTime;
+                    window.CursorState = CursorState.Grabbed;
+                    break;
+
+                case Mode.Locked:
+                    window.CursorState = CursorState.Normal;
+                    break;
             }
-
-            if (input.IsKeyPressed(Keys.F))
-                cameraMode = !cameraMode;
-
-            yaw += mouse.Delta.X * SENSITIVITY * deltaTime;
-            pitch -= mouse.Delta.Y * SENSITIVITY * deltaTime;
-
-            UpdateVectors();
-        }
-
-        public void Update(KeyboardState input, MouseState mouse, FrameEventArgs e)
-        {
-            InputController(input, mouse, e);
+            
+            if (input.IsKeyDown(Keys.F))
+            {
+                if (input.IsKeyPressed(Keys.D1)) { mode = Mode.Default; }
+                if (input.IsKeyPressed(Keys.D2)) { mode = Mode.LookAround; }
+                if (input.IsKeyPressed(Keys.D3)) { mode = Mode.Locked; }
+            }
         }
     }
 }

@@ -72,26 +72,25 @@ namespace GameEngine
 
             cubeMesh = new Mesh(World.Type.Cube);
 
-            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -10f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(40f, 1f, 40f));
+            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -10f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(40f, 1f, 40f));
 
-            GameObject wallRight = new GameObject(cubeMesh, new Vector3(20f, 5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(1f, 30f, 40f));
-            GameObject wallLeft = new GameObject(cubeMesh, new Vector3(-20f, 5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(1f, 30f, 40f));
-            GameObject wallBack = new GameObject(cubeMesh, new Vector3(0f, 5f, -20f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(40f, 30f, 1f));
-            GameObject wallFront = new GameObject(cubeMesh, new Vector3(0f, 5f, 20f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(40f, 30f, 1f));
+            GameObject wallRight = new GameObject(cubeMesh, new Vector3(20f, 5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(1f, 30f, 40f));
+            GameObject wallLeft = new GameObject(cubeMesh, new Vector3(-20f, 5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(1f, 30f, 40f));
+            GameObject wallBack = new GameObject(cubeMesh, new Vector3(0f, 5f, -20f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(40f, 30f, 1f));
+            GameObject wallFront = new GameObject(cubeMesh, new Vector3(0f, 5f, 20f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(40f, 30f, 1f));
 
-            player = new GameObject(cubeMesh, new Vector3(0f, 55f, -5f), Quaternion.Identity, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false));
+            player = new GameObject(cubeMesh, new Vector3(0f, 55f, -5f), Quaternion.Identity, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
 
             Mesh testDummyMesh = new Mesh("test_dummy.glb");
-            GameObject testDummy = new GameObject(testDummyMesh, new Vector3(5f, 2f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false));
+            GameObject testDummy = new GameObject(testDummyMesh, new Vector3(5f, 2f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
 
             for (int i = 0; i < 10; i++)
             {
-                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, i * 5f, 0f), Quaternion.Identity, new Material(new Vector3(i / 10f, 0f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false));
+                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, i * 5f, 0f), Quaternion.Identity, new Material(new Vector3(i / 10f, 0f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
             }
 
-            camera = new Camera(width, height, new Vector3(0f, 0f, -3f));
+            camera = new Camera(width, height, new Vector3(0f, 0f, -3f), 40f);
             Enable(EnableCap.DepthTest);
-            CursorState = CursorState.Grabbed;
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -156,12 +155,11 @@ namespace GameEngine
             KeyboardState input = KeyboardState;
             base.OnUpdateFrame(args);
 
-            Console.WriteLine(fps);
             Time.Update(args.Time);
 
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
 
-            if (!camera.cameraMode)
+            if (camera.mode == Camera.Mode.LookAround)
             {
                 /*float moveSpeed = speed * (float)args.Time;
 
@@ -180,10 +178,10 @@ namespace GameEngine
 
             if (input.IsKeyDown(Keys.J))
             {
-                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, 60f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false));
+                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, 60f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static));
             }
 
-            camera.Update(input, mouse, args);
+            camera.Update(this, input, mouse, args);
 
             if (input.IsKeyPressed(Keys.Escape))
             {
@@ -196,10 +194,9 @@ namespace GameEngine
             base.OnUnload();
 
             physics.Dispose();
-            geometryShader.Delete();
-            lightingShader.Delete();
             fbo.Delete();
             quad.Delete();
+            ShaderProgram.Delete();
             GameObject.Delete();
         }
     }

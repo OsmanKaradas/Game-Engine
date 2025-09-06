@@ -5,16 +5,10 @@ namespace GameEngine
 {
     public class Program
     {
-        // Entry point of the program
         static void Main(string[] args)
         {
-            // Creates game object and disposes of it after leaving the scope
-
-            using(ShadowTest game = new ShadowTest(1920, 1080))
-            {
-                // running the game
-                game.Run();
-            }
+            ShadowTest game = new(960, 540);
+            game.Run();
         }
     }
 }

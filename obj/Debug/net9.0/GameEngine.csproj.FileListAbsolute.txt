@@ -92,5 +92,9 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/Test.vert
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/ShadowPass.frag
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/ShadowPass.vert
-/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPassTest.frag
-/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/LightingPassTest.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/ImGui.NET.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/linux-x64/native/libcimgui.so
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/osx/native/libcimgui.dylib
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/cimgui.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/cimgui.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x86/native/cimgui.dll

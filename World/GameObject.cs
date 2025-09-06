@@ -13,6 +13,8 @@ namespace GameEngine.World
         public Vector3 position;
         public Quaternion rotation;
         public Vector3 scale;
+        public Vector3 front = new Vector3(0f, 0f, 1f);
+        public Vector3 right = new Vector3(1f, 0f, 0f);
 
         public Material material;
         public Rigidbody rigidbody = null!;
@@ -22,7 +24,7 @@ namespace GameEngine.World
         public string tag = "";
 
         public static List<GameObject> gameObjects = new();
-
+        
         public GameObject(Mesh mesh, Vector3 position, Quaternion rotation, Material material, Rigidbody? rigidbody = null, Vector3? scale = null)
         {
             this.mesh = mesh;
@@ -37,7 +39,7 @@ namespace GameEngine.World
                 Vector3 colliderSize = this.scale * mesh.size;
                 rigidbody.Initialize(position, rotation, colliderSize);
             }
-
+            
             gameObjects.Add(this);
         }
 
@@ -54,33 +56,33 @@ namespace GameEngine.World
             if (gameObjects.Count == 0)
                 Console.WriteLine("There are no gameobjects to render!");
             foreach (GameObject obj in gameObjects)
-                {
-                    if (obj.position.Y < -50f)
-                        continue;
+            {
+                if (obj.position.Y < -50f)
+                    continue;
 
-                    Matrix4 model = obj.GetModelMatrix();
-                    UniformMatrix4(GetUniformLocation(shader.ID, "model"), false, ref model);
-                    shader.SetVector3("inColor", obj.material.color);
-                    obj.material.Render(shader);
+                shader.SetMatrix4("model", obj.GetModelMatrix());
 
-                    obj.UpdateTransform();
+                shader.SetVector3("inColor", obj.material.color);
+                obj.material.Render(shader);
+                obj.mesh.Render();
+            }
+        }
 
-                    obj.mesh.buffers.vao.Bind();
-                    obj.mesh.buffers.ibo.Bind();
-
-                    DrawElements(PrimitiveType.Triangles, obj.mesh.meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
-                    obj.mesh.buffers.vao.Unbind();
-                }
+        public static void Update()
+        {
+            foreach(GameObject obj in gameObjects)
+                obj.UpdateTransform();
         }
 
         public void UpdateTransform()
         {
-            if (rigidbody != null)
-            {
-                rigidbody.UpdateTransform();
-                position = new Vector3(rigidbody.position.X, rigidbody.position.Y, rigidbody.position.Z);
-                rotation = new Quaternion(rigidbody.rotation.X, rigidbody.rotation.Y, rigidbody.rotation.Z, rigidbody.rotation.W);
-            }
+            if (rigidbody == null)
+                return;
+
+            var transform = rigidbody.body.GetTransformedShape();
+
+            position = new Vector3(transform.ShapePositionCOM.X, transform.ShapePositionCOM.Y, transform.ShapePositionCOM.Z);
+            rotation = new Quaternion(transform.ShapeRotation.X, transform.ShapeRotation.Y, transform.ShapeRotation.Z, transform.ShapeRotation.W);
         }
 
         public static void Delete()

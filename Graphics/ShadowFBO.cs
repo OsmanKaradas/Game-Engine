@@ -9,17 +9,17 @@ namespace GameEngine.Graphics
     public class ShadowFBO
     {
         public int ID;
-        public int shadowMap;
-        public int width = 1024;
-        public int height = 1024;
+        public int depthMap;
+        public int width = 2048;
+        public int height = 2048;
         public ShadowFBO()
         {
             ID = GenFramebuffer();
             BindFramebuffer(FramebufferTarget.Framebuffer, ID);
 
             // POSITION
-            shadowMap = GenTexture();
-            BindTexture(TextureTarget.Texture2D, shadowMap);
+            depthMap = GenTexture();
+            BindTexture(TextureTarget.Texture2D, depthMap);
             TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent24, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, 0);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
@@ -28,9 +28,9 @@ namespace GameEngine.Graphics
             float[] borderColor = { 1f, 1f, 1f, 1f };
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBorderColor, borderColor);
 
-            // DEPTH
             Bind();
-            FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, shadowMap, 0);
+            FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthMap, 0);
+
             DrawBuffer(DrawBufferMode.None);
             ReadBuffer(ReadBufferMode.None);
 
@@ -53,7 +53,7 @@ namespace GameEngine.Graphics
 
         public void Delete()
         {
-            DeleteTexture(shadowMap);
+            DeleteTexture(depthMap);
             DeleteFramebuffer(ID);
         }
     }

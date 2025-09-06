@@ -11,34 +11,34 @@ namespace GameEngine.Physics
         {
             Box,
             Sphere,
+            Capsule,
             Floor
         }
-        public JoltPhysics physics;
-        public System.Numerics.Vector3 position;
-        public System.Numerics.Quaternion rotation;
-        public System.Numerics.Vector3 scale;
 
         private BodyType bodyType;
-        public Body body = null!;
-        public BodyID bodyID;
-        public bool isStatic;
+        private MotionType motionType;
 
-        public float speed = 8f;
-        private float moveSpeed;
+        public JoltPhysics physics;
+        private System.Numerics.Vector3 position;
+        private System.Numerics.Quaternion rotation;
+        private System.Numerics.Vector3 scale;
+
+        public Body body = null!;
 
         private bool initialized;
 
-        public Rigidbody(JoltPhysics physics, BodyType bodyType, bool isStatic)
+        public Rigidbody(JoltPhysics physics, BodyType bodyType, MotionType motionType)
         {
             this.physics = physics;
             this.bodyType = bodyType;
-            this.isStatic = isStatic;
+            this.motionType = motionType;
         }
 
         public void Initialize(Vector3 position, Quaternion rotation, Vector3 scale)
         {
             this.position = new System.Numerics.Vector3(position.X, position.Y, position.Z);
             this.rotation = new System.Numerics.Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W);
+
             this.scale = new System.Numerics.Vector3(scale.X, scale.Y, scale.Z);
 
             switch (bodyType)
@@ -47,74 +47,55 @@ namespace GameEngine.Physics
                     body = CreateBoxRigidbody();
                     break;
                 case BodyType.Sphere:
-                    body = CreateSphereRigidbody();
+                    body = CreateSphereRigidbody(0.7f);
+                    break;
+                case BodyType.Capsule:
+                    body = CreateCapsuleRigidbody(0.65f, 0.6f);
                     break;
                 case BodyType.Floor:
                     body = Game.physics.CreateFloor(scale.Length * 0.5f, JoltPhysics.Layers.NonMoving);
                     break;
             }
 
+            if (motionType != MotionType.Static)
+                body.MotionProperties.ScaleToMass(1f);
+
             initialized = true;
-        }
-
-        public void UpdateTransform()
-        {
-            if (!initialized)
-                return;
-
-            var transform = physics.BodyInterface.GetTransformedShape(physics.BodyLockInterface, bodyID);
-
-            position = transform.ShapePositionCOM;
-            rotation = transform.ShapeRotation;
         }
 
         private Body CreateBoxRigidbody()
         {
-            Body box =  physics.CreateBox(
+            Body box = physics.CreateBox(
                 scale * 0.5f,
                 position,
                 rotation,
-                isStatic ? MotionType.Static : MotionType.Dynamic,
-                isStatic ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving,
+                motionType,
+                motionType == MotionType.Static ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving,
                 Activation.Activate
             );
-            bodyID = box.ID;
+
             return box;
         }
 
-        private Body CreateSphereRigidbody()
+        private Body CreateSphereRigidbody(float radius)
         {
             Body sphere = physics.CreateSphere(
-                0.7f,
+                radius,
                 position,
                 rotation,
-                isStatic ? MotionType.Static : MotionType.Dynamic,
-                isStatic ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving,
+                motionType,
+                motionType == MotionType.Static ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving,
                 Activation.Activate
             );
-            bodyID = sphere.ID;
             return sphere;
         }
 
-        public void Move(KeyboardState keyboardInput, float deltaTime)
+        private Body CreateCapsuleRigidbody(float height, float radius)
         {
-            if (!initialized)
-                return;
-
-            moveSpeed = speed * deltaTime;
-
-            Console.WriteLine(moveSpeed);
-
-            System.Numerics.Vector3 force = System.Numerics.Vector3.Zero;
-
-            //if (keyboardInput.IsKeyDown(Keys.RightControl)) { moveSpeed *= 1.25f; }
-
-            if (keyboardInput.IsKeyDown(Keys.Up)) { force.Z += moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.Left)) { force.X -= moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.Down)) { force.Z -= moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.Right)) { force.X += moveSpeed; }
-
-            body.AddForce(force);
+            CapsuleShape capsuleShape = new(new(height * 2f, radius * 2f));
+            Body capsule = physics.BodyInterface.CreateBody(new BodyCreationSettings(capsuleShape, position, rotation, motionType, motionType == MotionType.Static ? JoltPhysics.Layers.NonMoving : JoltPhysics.Layers.Moving));
+            physics.BodyInterface.AddBody(capsule.ID, Activation.Activate);
+            return capsule;
         }
     }
 }

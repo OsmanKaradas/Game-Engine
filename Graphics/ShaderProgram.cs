@@ -8,6 +8,7 @@ namespace GameEngine.Graphics
     public class ShaderProgram
     {
         public int ID;
+        private static List<ShaderProgram> shaders = new List<ShaderProgram>();
         public ShaderProgram(string vertexShaderFilePath, string fragmentShaderFilePath)
         {
             ID = CreateProgram();
@@ -37,17 +38,19 @@ namespace GameEngine.Graphics
 
             DeleteShader(vertexShader);
             DeleteShader(fragmentShader);
+
+            shaders.Add(this);
         }
 
         public void Unbind()
         {
             UseProgram(0);
         }
-        public void Delete()
+        public static void Delete()
         {
-            DeleteProgram(ID);
+            foreach (ShaderProgram shader in shaders)
+                DeleteProgram(shader.ID);
         }
-
         public static string LoadShaderSource(string fileName)
         {
             string shaderPath = Path.Combine(AppContext.BaseDirectory, "Shaders", fileName);

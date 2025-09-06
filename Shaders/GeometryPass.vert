@@ -14,6 +14,6 @@ out vec2 uv;
 void main(){
     gl_Position = projection * view * model * vec4(aPos, 1.0f);
     fragPos = vec3(model * vec4(aPos, 1.0f));
-    normal = normalize(aNormal);
+    normal = normalize(mat3(transpose(inverse(model))) * aNormal);
     uv = aUV;
 }

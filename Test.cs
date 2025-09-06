@@ -7,6 +7,8 @@ using GameEngine.World;
 using GameEngine.Physics;
 using GameEngine.Graphics;
 using OpenTK.Mathematics;
+using ImGuiNET;
+using JoltPhysicsSharp;
 
 namespace GameEngine
 {
@@ -44,72 +46,64 @@ namespace GameEngine
             4, 5, 6,
             4, 6, 7
         };
-
+        private ImGuiController guiController = null!;
         JoltPhysics physics = null!;
-        FBO fbo = null!;
         Quad quad = null!;
-        ShadowFBO shadowFBO = null!;
-        ShaderProgram geometryShader = null!;
-        ShaderProgram lightingShader = null!;
-        ShaderProgram shadowShader = null!;
+        GeometryPass geometryPass = null!;
+        LightingPass lightingPass = null!;
+        ShadowPass shadowPass = null!;
+
         ShaderProgram lightShader = null!;
 
         VAO lightVAO = null!;
         VBO lightVBO = null!;
         IBO lightIBO = null!;
 
-        Matrix4 lightSpaceMatrix;
-        Vector3 lightPos = new Vector3(0f, 5f, 0f);
-        Vector3 lightDir = new Vector3(-0.2f, -1f, -0.5f);
+        PointLight pointLight = null!;
+        Vector3 lightDir = new Vector3(-0.1f, -1f, -1f).Normalized();
         Mesh cubeMesh = null!;
+        Mesh sphere = null!;
+        Player player = null!;
         Camera camera = null!;
-        int width;
-        int height;
+
+        float fps;
+
+        int width, height;
         public Test(int width, int height) : base(GameWindowSettings.Default, NativeWindowSettings.Default)
         {
-            this.width = width;
-            this.height = height;
+            this.width = width; this.height = height;
             this.CenterWindow(new Vector2i(width, height));
+            this.WindowState = WindowState.Fullscreen;
         }
 
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
         {
             base.OnFramebufferResize(e);
-            Viewport(0, 0, e.Width, e.Height);
 
-            fbo?.Delete();
-            fbo = new FBO(e.Width, e.Height);
+            width = e.Width; height = e.Height;
+            Viewport(0, 0, width, height);
 
             if (camera != null)
-            { camera.SCREENWIDTH = e.Width; camera.SCREENHEIGHT = e.Height; }
+            { camera.screenWidth = width; camera.screenHeight = height; }
 
-            width = e.Width;
-            height = e.Height;
+            if(guiController != null)
+                guiController.WindowResized(width, height);
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
+            guiController = new ImGuiController(width, height);
+            camera = new Camera(width, height, new Vector3(0f, 0f, -3f), 10f);
             physics = new JoltPhysics();
 
-            geometryShader = new ShaderProgram("GeometryPass.vert", "GeometryPass.frag");
-            lightingShader = new ShaderProgram("LightingPass.vert", "LightingPass.frag");
-            shadowShader = new ShaderProgram("ShadowPass.vert", "ShadowPass.frag");
-            lightShader = new ShaderProgram("light.vert", "light.frag");
-
-            fbo = new FBO(width, height);
             quad = new Quad();
 
-            shadowFBO = new ShadowFBO();
+            geometryPass = new GeometryPass("GeometryPass.vert", "GeometryPass.frag", width, height);
+            lightingPass = new LightingPass("LightingPass.vert", "LightingPass.frag", quad);
+            shadowPass = new ShadowPass("ShadowPass.vert", "ShadowPass.frag");
+            lightShader = new ShaderProgram("light.vert", "light.frag");
 
-            UseProgram(lightingShader.ID);
-            lightingShader.SetInt("gPosition", 0);
-            lightingShader.SetInt("gNormal", 1);
-            lightingShader.SetInt("gMaterial", 2);
-            lightingShader.SetInt("gDepth", 3);
-            lightingShader.SetInt("shadowMap", 4);
-
-            UseProgram(0);
             UseProgram(lightShader.ID);
             lightVAO = new VAO();
             lightVBO = new VBO(lightVertices);
@@ -121,88 +115,85 @@ namespace GameEngine
             lightVAO.Unbind();
             UseProgram(0);
 
+            Light.camera = camera;
+            Light.shader = lightingPass.shader;
+
+            DirectionalLight directionalLight = new DirectionalLight(new Vector3(0.075f, 0.085f, 0.085f), lightDir);
+            pointLight = new PointLight(new Vector3(0.675f, 0.875f, 1f), new Vector3(0f, 5f, 0f));
+            
             cubeMesh = new Mesh(World.Type.Cube);
-            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(20f, 1f, 20f));
-            GameObject player = new GameObject(cubeMesh, new Vector3(0f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false));
+            sphere = new Mesh(World.Type.Sphere);
+            GameObject cube = new(cubeMesh, new(-5f, 0f, 0f), Quaternion.Identity, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Dynamic));
+            GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(20f, 1f, 20f));
+            GameObject top = new GameObject(cubeMesh, new Vector3(0f, 25f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(20f, 1f, 20f));
+            
+            GameObject wallF1 = new GameObject(cubeMesh, new Vector3(-8.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(3f, 30f, 1f));
+            GameObject wallF2 = new GameObject(cubeMesh, new Vector3(-4.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(2f, 30f, 1f));
+            GameObject wallF3 = new GameObject(cubeMesh, new Vector3(0f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(2f, 30f, 1f));
+            GameObject wallF4 = new GameObject(cubeMesh, new Vector3(4.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(2f, 30f, 1f));
+            GameObject wallF5 = new GameObject(cubeMesh, new Vector3(8.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(3f, 30f, 1f));
 
-            GameObject wall1 = new GameObject(cubeMesh, new Vector3(-8.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(3f, 30f, 1f));
-            GameObject wall2 = new GameObject(cubeMesh, new Vector3(-4.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(3f, 30f, 1f));
-            GameObject wall3 = new GameObject(cubeMesh, new Vector3(0f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(3f, 30f, 1f));
-            GameObject wall4 = new GameObject(cubeMesh, new Vector3(4.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(3f, 30f, 1f));
-            GameObject wall5 = new GameObject(cubeMesh, new Vector3(8.5f, 10.5f, 9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, true), new Vector3(3f, 30f, 1f));
+            GameObject wallB = new GameObject(cubeMesh, new Vector3(0f, 10.5f, -9.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(20f, 30f, 1f));
+            GameObject wallL = new GameObject(cubeMesh, new Vector3(-9.5f, 10.5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(1f, 30f, 20f));
+            GameObject wallR = new GameObject(cubeMesh, new Vector3(9.5f, 10.5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(1f, 30f, 20f));
+            
+            GameObject interior1 = new GameObject(cubeMesh, new Vector3(-7.5f, -3.5f, -8.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(3f, 3f, 2f));
+            GameObject interior2 = new GameObject(cubeMesh, new Vector3(0f, -3.5f, -7.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(5f, 5f, 3f));
+            GameObject interior3 = new GameObject(cubeMesh, new Vector3(7.5f, -3.5f, -8.5f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(3f, 3f, 2f));
+            
             Mesh dummyMesh = new Mesh("test_dummy.glb");
-            GameObject dummy = new GameObject(dummyMesh, new Vector3(5f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false), new Vector3(0.5f, 0.5f, 0.5f));
+            GameObject dummy = new GameObject(dummyMesh, new Vector3(5f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic), new Vector3(0.5f, 0.5f, 0.5f));
 
-            camera = new Camera(width, height, new Vector3(0f, 0f, -3f));
-            CursorState = CursorState.Grabbed;
+            Mesh capsule = new Mesh("capsule.glb");
+            GameObject playerObject = new GameObject(capsule, new Vector3(0f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)));
+            player = new(playerObject, new CapsuleShape(new(1.8f, 0.9f)), 60f, camera, physics);
+
             Enable(EnableCap.DepthTest);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            // --- SHADOW RENDER ---
-            Viewport(0, 0, shadowFBO.width, shadowFBO.height);
-            shadowFBO.Bind();
-            Clear(ClearBufferMask.DepthBufferBit);
-            Enable(EnableCap.CullFace);
-            CullFace(TriangleFace.Front);
-            UseProgram(shadowShader.ID);
-            float near = 1f, far = 20f;
-            Matrix4 lightProjection = Matrix4.CreateOrthographic(20f, 20f, near, far);
-            Matrix4 lightView = Matrix4.LookAt(-lightDir * 10f, Vector3.Zero, Vector3.UnitY);
-            lightSpaceMatrix = lightProjection * lightView;
-            UniformMatrix4(GetUniformLocation(shadowShader.ID, "lightSpaceMatrix"), false, ref lightSpaceMatrix);
+            shadowPass.Render(width, height);
 
-            GameObject.Render(shadowShader);
-            shadowFBO.Unbind();
-            CullFace(TriangleFace.Back);
-            
-            // --- GEOMETRY RENDER ---
-            fbo.Bind();
-            Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            Viewport(0, 0, width, height);
+            geometryPass.Render(camera);
 
-            geometryShader.Render(camera);
-
-            GameObject.Render(geometryShader);
-    
-            fbo.Unbind();
-
-            // --- LIGHT RENDER ---
-            Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            ActiveTexture(TextureUnit.Texture0);
-            BindTexture(TextureTarget.Texture2D, fbo.gPosition);
-            ActiveTexture(TextureUnit.Texture1);
-            BindTexture(TextureTarget.Texture2D, fbo.gNormal);
-            ActiveTexture(TextureUnit.Texture2);
-            BindTexture(TextureTarget.Texture2D, fbo.gMaterial);
-            ActiveTexture(TextureUnit.Texture3);
-            BindTexture(TextureTarget.Texture2D, fbo.gDepth);
-            ActiveTexture(TextureUnit.Texture4);
-            BindTexture(TextureTarget.Texture2D, shadowFBO.shadowMap);
-
-            UseProgram(lightingShader.ID);
-
-            UniformMatrix4(GetUniformLocation(lightingShader.ID, "lightSpaceMatrix"), false, ref lightSpaceMatrix);
-
-            Vector3 lightColor = new Vector3(0.5f, 0f, 0.5f);
-            lightingShader.SetVector3("viewPos", camera.position);
-            lightingShader.SetVector3("directionalLight.direction", lightDir);
-            lightingShader.SetVector3("directionalLight.color", new Vector3(0.5f, 0.5f, 0.5f));
-            lightingShader.SetVector3("pointLights[0].position",lightPos);
-            lightingShader.SetVector3("pointLights[0].color", lightColor);
-            lightingShader.SetInt("pointLightCount", 1);
-
-            quad.Render();
+            lightingPass.Render(geometryPass.fbo, shadowPass.fbo, shadowPass.lightSpaceMatrix);
 
             // --- LIGHT OBJECT RENDER ---
             lightShader.Render(camera);
             lightVAO.Bind();
-            Matrix4 model = Matrix4.Identity * Matrix4.CreateTranslation(lightPos);
-            UniformMatrix4(GetUniformLocation(lightShader.ID, "model"), false, ref model);
-            lightShader.SetVector3("color", lightColor);
+
+            Matrix4 lightModel = Matrix4.Identity * Matrix4.CreateTranslation(pointLight.position);
+            lightShader.SetMatrix4("model", lightModel);
+            lightShader.SetVector3("inColor", pointLight.color);
             DrawElements(PrimitiveType.Triangles, lightIndices.Count, DrawElementsType.UnsignedInt, 0);
+
+            // --- GUI ---
+            guiController.Update(this, (float)args.Time);
+
+            ImGui.SetNextWindowBgAlpha(0.5f);
+
+            ImGui.Begin("FPS Overlay", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove);
+            ImGui.Text($"FPS: {Time.fps}");
+            ImGui.End();
+
+            ImGui.SetNextWindowPos(new(0, 500));
+            ImGui.Begin("Light Controls", ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove);
+            ImGui.SetCursorPosX(90f);
+            ImGui.Text("Light Controls");
+            ImGui.Text("Direction");
+            
+            ImGui.SliderFloat("lightDirX", ref Light.directionalLight.direction.X, -1f, 1f);
+            ImGui.SliderFloat("lightDirY", ref Light.directionalLight.direction.Y, -1f, 1f);
+            ImGui.SliderFloat("lightDirZ", ref Light.directionalLight.direction.Z, -1f, 1f);
+
+            ImGui.Text("Color");
+            ImGui.SliderFloat("lightColorR", ref pointLight.color.X, 0f, 1f);
+            ImGui.SliderFloat("lightColorG", ref pointLight.color.Y, 0f, 1f);
+            ImGui.SliderFloat("lightColorB", ref pointLight.color.Z, 0f, 1f);
+            ImGui.End();
+
+            guiController.Render();
 
             SwapBuffers();
             base.OnRenderFrame(args);
@@ -213,11 +204,17 @@ namespace GameEngine
             base.OnUpdateFrame(args);
             MouseState mouseInput = MouseState;
             KeyboardState keyboardInput = KeyboardState;
+
             Time.Update(args.Time);
-
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
+            GameObject.Update();
+            camera.Update(this, keyboardInput, mouseInput, args);
+            if (camera.mode == Camera.Mode.LookAround)
+            {
+                player.Update(keyboardInput);
+            }
 
-            camera.InputController(keyboardInput, mouseInput, args);
+            Console.WriteLine(Time.fps);
 
             if (keyboardInput.IsKeyPressed(Keys.Escape))
             {
@@ -226,32 +223,30 @@ namespace GameEngine
 
             if (keyboardInput.IsKeyDown(Keys.D0))
             {
-                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, 50f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, false));
+                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, 5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
             }
 
             float moveSpeed = 8f * Time.deltaTime;
-            if (keyboardInput.IsKeyDown(Keys.Up)) { lightPos.Z -= moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.Down)) { lightPos.Z += moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.Right)) { lightPos.X += moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.Left)) { lightPos.X -= moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.V)) { lightPos.Y += moveSpeed; }
-            if (keyboardInput.IsKeyDown(Keys.B)) { lightPos.Y -= moveSpeed; }
-
-            if (keyboardInput.IsKeyDown(Keys.R)) { lightDir.X += moveSpeed * 0.1f; }
-            if (keyboardInput.IsKeyDown(Keys.T)) { lightDir.X -= moveSpeed * 0.1f; }
-            
+            if (keyboardInput.IsKeyDown(Keys.Up)) { pointLight.position.Z -= moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.Down)) { pointLight.position.Z += moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.Right)) { pointLight.position.X += moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.Left)) { pointLight.position.X -= moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.V)) { pointLight.position.Y += moveSpeed; }
+            if (keyboardInput.IsKeyDown(Keys.B)) { pointLight.position.Y -= moveSpeed; }
             moveSpeed = 0f;
         }
         protected override void OnUnload()
         {
             base.OnUnload();
-
+            
+            lightVAO.Delete();
+            lightVBO.Delete();
+            lightIBO.Delete();
             physics.Dispose();
-            geometryShader.Delete();
-            lightingShader.Delete();
-            fbo.Delete();
             quad.Delete();
+            ShaderProgram.Delete();
             GameObject.Delete();
+            guiController.Dispose();
         }
     }
 }

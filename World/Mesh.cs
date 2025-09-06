@@ -56,6 +56,14 @@ namespace GameEngine.World
             size = maxBounds - minBounds;
         }
 
+        public void Render()
+        {
+            buffers.vao.Bind();
+            buffers.ibo.Bind();
+
+            DrawElements(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
+            buffers.vao.Unbind();
+        }
         public static List<Vector3> CalculateSmoothNormals(List<Vector3> vertices, List<uint> indices)
         {
             List<Vector3> normals = new List<Vector3>(new Vector3[vertices.Count]);
@@ -70,7 +78,7 @@ namespace GameEngine.World
                 Vector3 v = v3 - v1;
 
                 Vector3 normal = Vector3.Cross(u, v);
-                
+
                 normals[(int)indices[i]] += normal;
                 normals[(int)indices[i + 1]] += normal;
                 normals[(int)indices[i + 2]] += normal;

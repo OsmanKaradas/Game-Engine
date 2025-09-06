@@ -5,99 +5,109 @@ namespace GameEngine.World
 {
     public class Light
     {
-        public int ID = 0;
-        private static int count;
-        public ShaderProgram shader;
-        public GameObject source = null!;
-        public Camera camera = null!;
-        public float ambient = 0.2f;
-        public float diffuse = 0.5f;
-        public float specular = 0.75f;
+        public static ShaderProgram shader = null!;
+        public static Camera camera = null!;
 
-        public Light(ShaderProgram shader, Camera camera, GameObject? source = null)
+        public static DirectionalLight directionalLight = null!;
+        public static List<PointLight> pointLights = new List<PointLight>();
+        public static List<SpotLight> spotLights = new List<SpotLight>();
+
+        public int ID;
+        public Vector3 color;
+        public float intensity = 1f;
+
+        public Light(Vector3 color)
         {
-            this.shader = shader;
-            this.camera = camera;
-            if (source != null)
-                this.source = source;
-            ID = count;
-            count++;
+            this.color = color;
         }
 
-        public virtual void Render()
+        public static void RenderLights()
         {
             shader.SetVector3("viewPos", camera.position);
+
+            if (directionalLight != null)
+                directionalLight.Render();
+
+            foreach (PointLight pointLight in pointLights)
+                pointLight.Render();
+            
+            foreach (SpotLight spotLight in spotLights)
+            {
+                spotLight.Render();
+            }
         }
     }
 
     public class DirectionalLight : Light
     {
-        Vector3 direction;
-        public DirectionalLight(ShaderProgram shader, Camera camera, Vector3 direction) : base(shader, camera)
+        public Vector3 direction;
+        public DirectionalLight(Vector3 color, Vector3 direction) : base(color)
         {
             this.direction = direction;
+            
+            directionalLight = this;
         }
 
-        public override void Render()
+        public void Render()
         {
-            base.Render();
             shader.SetVector3("directionalLight.direction", direction);
-
-            shader.SetFloat("directionalLight.ambient", ambient);
-            shader.SetFloat("directionalLight.diffuse", diffuse);
-            shader.SetFloat("directionalLight.specular", specular);
+            shader.SetVector3("directionalLight.color", color * intensity);
         }
     }
     public class PointLight : Light
     {
-        public float constant = 1f;
-        public float linear = 0.045f;
-        public float quadratic = 0.0075f;
+        public Vector3 position;
+        public float linear = 0.045f, quadratic = 0.0075f;
 
-        public PointLight(ShaderProgram shader, Camera camera, GameObject source) : base(shader, camera, source)
+        public PointLight(Vector3 color, Vector3 position) : base(color)
         {
+            this.position = position;
 
+            ID = pointLights.Count;
+            pointLights.Add(this);
         }
 
-        public override void Render()
+        public void Render()
         {
-            base.Render();
-            shader.SetVector3("pointLight.position", source.position);
+            shader.SetInt("pointLightsCount", pointLights.Count);
 
-            shader.SetFloat($"pointLight.ambient", ambient);
-            shader.SetFloat($"pointLight.diffuse", diffuse);
-            shader.SetFloat($"pointLight.specular", specular);
+            shader.SetVector3($"pointLights[{ID}].position", position);
+            shader.SetVector3($"pointLights[{ID}].color", color * intensity);
 
-            shader.SetFloat($"pointLight.constant", constant);
-            shader.SetFloat($"pointLight.linear", linear);
-            shader.SetFloat($"pointLight.quadratic", quadratic);
+            shader.SetFloat($"pointLights[{ID}].linear", linear);
+            shader.SetFloat($"pointLights[{ID}].quadratic", quadratic);
         }
     }
 
     public class SpotLight : Light
     {
-        public SpotLight(ShaderProgram shader, Camera camera, GameObject source) : base(shader, camera, source)
+        public Vector3 position;
+        public Vector3 direction;
+        public float innerCone = 0.95f, outerCone = 0.9f;
+        public float linear = 0.045f, quadratic = 0.0075f;
+
+        public SpotLight(Vector3 color, Vector3 position, Vector3 direction) : base(color)
         {
-            
+            this.position = position;
+            this.direction = direction.Normalized();
+
+            ID = spotLights.Count;
+            spotLights.Add(this);
         }
 
-        public override void Render()
+        public void Render()
         {
-            base.Render();
+            shader.SetInt("spotLightsCount", spotLights.Count);
 
-            shader.SetVector3("spotLight.position", camera.position);
-            shader.SetVector3("spotLight.direction", camera.front);
-            
-            shader.SetFloat("spotLight.innerCutoff", 0.95f);
-            shader.SetFloat("spotLight.outerCutoff", 0.9f);
+            shader.SetVector3($"spotLights[{ID}].position", position);
+            shader.SetVector3($"spotLights[{ID}].direction", direction);
 
-            shader.SetFloat($"spotLight.ambient", ambient);
-            shader.SetFloat($"spotLight.diffuse", diffuse);
-            shader.SetFloat($"spotLight.specular", specular);
+            shader.SetVector3($"spotLights[{ID}].color", color * intensity);
 
-            shader.SetFloat($"spotLight.constant", 1f);
-            shader.SetFloat($"spotLight.linear", 0.045f);
-            shader.SetFloat($"spotLight.quadratic", 0.0075f);
+            shader.SetFloat($"spotLights[{ID}].innerCone", innerCone);
+            shader.SetFloat($"spotLights[{ID}].outerCone", outerCone);
+            shader.SetFloat($"spotLights[{ID}].linear", linear);
+            shader.SetFloat($"spotLights[{ID}].quadratic", quadratic);
         }
     }
 }
