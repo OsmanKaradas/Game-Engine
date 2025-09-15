@@ -11,17 +11,18 @@ namespace GameEngine.Graphics
         public ShaderProgram shader;
         public Quad quad;
 
-        public LightingPass(string shaderVert, string shaderFrag, Quad quad)
+        public LightingPass(string vertShader, string fragShader, Quad quad)
         {
-            shader = new(shaderVert, shaderFrag);
+            shader = new(vertShader, fragShader);
 
             UseProgram(shader.ID);
             shader.SetInt("gPosition", 0);
             shader.SetInt("gNormal", 1);
-            shader.SetInt("gMaterial", 2);
-            shader.SetInt("gDepth", 3);
-            shader.SetInt("depthMap", 4);
-            shader.SetInt("depthCubeMap", 5);
+            shader.SetInt("gAlbedo", 2);
+            shader.SetInt("gMaterial", 3);
+            shader.SetInt("gDepth", 4);
+            shader.SetInt("depthMap", 5);
+            shader.SetInt("depthCubeMap", 6);
 
             this.quad = quad;
         }
@@ -35,12 +36,14 @@ namespace GameEngine.Graphics
             ActiveTexture(TextureUnit.Texture1);
             BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gNormal);
             ActiveTexture(TextureUnit.Texture2);
-            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gMaterial);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gAlbedo);
             ActiveTexture(TextureUnit.Texture3);
-            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gDepth);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gMaterial);
             ActiveTexture(TextureUnit.Texture4);
-            BindTexture(TextureTarget.Texture2D, shadowPass.fbo.depthMap);
+            BindTexture(TextureTarget.Texture2D, geometryPass.fbo.gDepth);
             ActiveTexture(TextureUnit.Texture5);
+            BindTexture(TextureTarget.Texture2D, shadowPass.fbo.depthMap);
+            ActiveTexture(TextureUnit.Texture6);
             BindTexture(TextureTarget.TextureCubeMap, shadowPass.cubeMapFBO.depthCubeMap);
 
             UseProgram(shader.ID);

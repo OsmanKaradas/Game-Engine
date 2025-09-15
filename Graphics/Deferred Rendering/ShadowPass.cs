@@ -44,37 +44,11 @@ namespace GameEngine.Graphics
             CullFace(TriangleFace.Back);
             Disable(EnableCap.CullFace);
         }
-        public void RenderSpotLightShadows()
-        {
-            Viewport(0, 0, fbo.width, fbo.height);
 
-            fbo.Bind();
-            Clear(ClearBufferMask.DepthBufferBit);
-            Enable(EnableCap.CullFace);
-            CullFace(TriangleFace.Front);
-
-            Matrix4 lightProjPerspective = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f), 1f, nearPlane, farPlane);
-            Matrix4 lightViewPerspective = Matrix4.LookAt(Light.spotLights[0].position, Vector3.Zero, new Vector3(0f, 1f, 0f));
-            lightSpaceMatrix = lightViewPerspective * lightProjPerspective;
-
-            UseProgram(shader.ID);
-            shader.SetMatrix4("lightSpaceMatrix", lightSpaceMatrix);
-            
-            GameObject.Render(shader);
-
-            fbo.Unbind();
-            CullFace(TriangleFace.Back);
-            Disable(EnableCap.CullFace);
-
-            GameObject.Render(shader);
-        }
-
-        public void RenderPointLightShadows(int width, int height, Vector3 lightPos)
+        public void RenderPointLightShadows(Vector3 lightPos)
         {
             Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            float near = 1f;
-            float far = 25f;
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f), 1f, near, far);
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f), 1f, nearPlane, farPlane);
             Matrix4[] transforms = {
                 projection * Matrix4.LookAt(lightPos, lightPos + Vector3.UnitX, Vector3.UnitY),
                 projection * Matrix4.LookAt(lightPos, lightPos - Vector3.UnitX, Vector3.UnitY),
@@ -93,8 +67,10 @@ namespace GameEngine.Graphics
                 shader.SetMatrix4($"shadowMatrices[{i}]", transforms[i]);
             }
 
-            shader.SetFloat("farPlane", far);
+            shader.SetFloat("farPlane", farPlane);
             shader.SetVector3("lightPos", lightPos);
+            shader.SetMatrix4("lightSpaceMatrix", lightSpaceMatrix);
+
             GameObject.Render(shader);
             cubeMapFBO.Unbind();
         }

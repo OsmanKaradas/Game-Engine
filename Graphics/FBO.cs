@@ -8,7 +8,7 @@ namespace GameEngine.Graphics
     public class FBO
     {
         public int ID;
-        public int gPosition, gNormal, gMaterial;
+        public int gPosition, gNormal, gAlbedo, gMaterial;
         public int gDepth;
         public FBO(int width, int height)
         {
@@ -31,13 +31,21 @@ namespace GameEngine.Graphics
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1, TextureTarget.Texture2D, gNormal, 0);
 
+            // ALBEDO
+            gAlbedo = GenTexture();
+            BindTexture(TextureTarget.Texture2D, gAlbedo);
+            TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
+            TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment2, TextureTarget.Texture2D, gAlbedo, 0);
+
             // MATERIAL
             gMaterial = GenTexture();
             BindTexture(TextureTarget.Texture2D, gMaterial);
             TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment2, TextureTarget.Texture2D, gMaterial, 0);
+            FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment3, TextureTarget.Texture2D, gMaterial, 0);
 
             // DEPTH
             gDepth = GenRenderbuffer();
@@ -48,7 +56,8 @@ namespace GameEngine.Graphics
             DrawBuffersEnum[] attachments = {
                 DrawBuffersEnum.ColorAttachment0,
                 DrawBuffersEnum.ColorAttachment1,
-                DrawBuffersEnum.ColorAttachment2
+                DrawBuffersEnum.ColorAttachment2,
+                DrawBuffersEnum.ColorAttachment3
             };
             DrawBuffers(attachments.Length, attachments);
 
@@ -56,7 +65,7 @@ namespace GameEngine.Graphics
             var status = CheckFramebufferStatus(FramebufferTarget.Framebuffer);
             if (status != FramebufferErrorCode.FramebufferComplete)
                 throw new Exception($"GBuffer incomplete: {status}");
-                    Bind();
+
             Unbind();
         }
 
@@ -74,6 +83,7 @@ namespace GameEngine.Graphics
         {
             DeleteTexture(gPosition);
             DeleteTexture(gNormal);
+            DeleteTexture(gAlbedo);
             DeleteTexture(gMaterial);
             DeleteRenderbuffer(gDepth);
             DeleteFramebuffer(ID);

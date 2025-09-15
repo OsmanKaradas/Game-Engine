@@ -66,7 +66,7 @@ namespace GameEngine
                 // up
                 if (pitch > 10.0f) pitch = 10.0f;
                 // down
-                if (pitch < -30.0f) pitch = -30.0f;                
+                if (pitch < -30.0f) pitch = -30.0f;
             }
 
             front.X = MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Cos(MathHelper.DegreesToRadians(yaw));
@@ -83,7 +83,7 @@ namespace GameEngine
             UpdateVectors();
             float deltaTime = (float)e.Time;
             float velocity = speed * deltaTime;
-            
+
             switch (mode)
             {
                 case Mode.Default:
@@ -135,13 +135,28 @@ namespace GameEngine
                     window.CursorState = CursorState.Normal;
                     break;
             }
-            
+
             if (input.IsKeyDown(Keys.F))
             {
                 if (input.IsKeyPressed(Keys.D1)) { mode = Mode.Default; }
                 if (input.IsKeyPressed(Keys.D2)) { mode = Mode.LookAround; }
                 if (input.IsKeyPressed(Keys.D3)) { mode = Mode.Locked; }
             }
+
+        }
+
+        public void SendRayCastFromScreen(GameWindow window, out Vector3 direction)
+        {
+            float x = (2f * window.MousePosition.X) / window.ClientSize.X - 1f;
+            float y = 1f - (2f * window.MousePosition.Y) / window.ClientSize.Y;
+            Vector4 clipCoords = new Vector4(x, y, -1.0f, 1.0f);
+
+            Vector4 eyeCoords = Vector4.TransformRow(clipCoords, GetProjectionMatrix().Inverted());
+            eyeCoords.Z = -1.0f;
+            eyeCoords.W = 0.0f;
+
+            Vector4 worldRay = Vector4.TransformRow(eyeCoords, GetViewMatrix().Inverted());
+            direction = Vector3.Normalize(new Vector3(worldRay.X, worldRay.Y, worldRay.Z));
         }
     }
 }

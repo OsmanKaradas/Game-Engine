@@ -59,7 +59,7 @@ namespace GameEngine
             moveDir.NormalizeFast();
             velocity = moveDir * moveSpeed;
             velocity.Y = -9.81f;
-            
+
             character.LinearVelocity = new(velocity.X, velocity.Y, velocity.Z);
             gameObject.position = new(character.Position.X, character.Position.Y, character.Position.Z);
         }

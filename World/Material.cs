@@ -1,68 +1,100 @@
 using OpenTK.Mathematics;
 using GameEngine.Graphics;
+using OpenTK.Graphics.OpenGL4;
 
 namespace GameEngine.World
 {
     public class Material
     {
         public Vector3 color;
-        public float ambient = 1f;
-        public float diffuse = 1f;
-        public float specular = 1f;
-        public float shininess;
+        public float roughness = 0.5f;
+        public float metallic = 0.5f;
+        public float ao = 0.5f;
+        public float shininess = 32f;
 
-        public Texture ambientTex = null!;
-        public Texture diffuseTex = null!;
-        public Texture specularTex = null!;
+        public Texture normalMap = null!;
+        public Texture albedoMap = null!;
+        public Texture roughnessMap = null!;
+        public Texture metallicMap = null!;
+        public Texture aoMap = null!;
 
-        public Material(Vector3 color, Texture? ambientTex = null, Texture? diffuseTex = null, Texture? specularTex = null)
+        public Material(Vector3 color, Texture? normalMap = null, Texture? albedoMap = null, Texture? roughnessMap = null, Texture? metallicMap = null, Texture? aoMap = null)
         {
             this.color = color;
-            if (ambientTex != null)
-                this.ambientTex = ambientTex;
-            if (diffuseTex != null)
-                this.diffuseTex = diffuseTex;
-            if (specularTex != null)
-                this.specularTex = specularTex;
+            if (normalMap != null)
+                this.normalMap = normalMap;
+
+            if (albedoMap != null)
+                this.albedoMap = albedoMap;
+
+            if (roughnessMap != null)
+                this.roughnessMap = roughnessMap;
+
+            if (metallicMap != null)
+                this.metallicMap = metallicMap;
+                
+            if (aoMap != null)
+                this.aoMap = aoMap;
         }
 
         public void Render(ShaderProgram shader)
         {
             shader.SetVector3("material.color", color);
+            shader.SetFloat("material.roughness", roughness);
+            shader.SetFloat("material.metallic", metallic);
+            shader.SetFloat("material.ao", ao);
 
-            shader.SetFloat("material.ambient", ambient);
-            shader.SetFloat("material.diffuse", diffuse);
-            shader.SetFloat("material.specular", specular);
-            shader.SetFloat("material.shininess", 32f);
-
-            if (ambientTex != null)
+            if (normalMap != null)
             {
-                ambientTex.Bind();
-                shader.SetBool("useAmbientTex", true);
+                normalMap.Bind();
+                shader.SetBool("useNormalMap", true);
             }
             else
             {
-                shader.SetBool("useAmbientTex", false);
+                shader.SetBool("useNormalMap", false);
             }
 
-            if (diffuseTex != null)
+            if (albedoMap != null)
             {
-                diffuseTex.Bind();
-                shader.SetBool("useDiffuseTex", true);
+                albedoMap.Bind();
+                shader.SetInt("material.albedoMap", (int)albedoMap.unit - (int)TextureUnit.Texture0);
+                shader.SetBool("useAlbedoMap", true);
             }
             else
             {
-                shader.SetBool("useDiffuseTex", false);
+                shader.SetBool("useAlbedoMap", false);
             }
 
-            if (specularTex != null)
+            if (roughnessMap != null)
             {
-                specularTex.Bind();
-                shader.SetBool("useSpecularTex", true);
+                roughnessMap.Bind();
+                shader.SetBool("useRoughnessMap", true);
             }
             else
             {
-                shader.SetBool("useSpecularTex", false);
+                shader.SetBool("useRoughnessMap", false);
+            }
+
+
+            if (metallicMap != null)
+            {
+                metallicMap.Bind();
+                shader.SetBool("useMetallicMap", true);
+            }
+            else
+            {
+                shader.SetBool("useMetallicMap", false);
+            }
+
+
+            if (aoMap != null)
+            {
+                aoMap.Bind();
+                shader.SetBool("useAOMap", true);
+            }
+            else
+            {
+                shader.SetBool("useAOMAP", false);
             }
         }
     }

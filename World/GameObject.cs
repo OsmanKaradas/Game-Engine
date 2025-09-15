@@ -62,8 +62,8 @@ namespace GameEngine.World
 
                 shader.SetMatrix4("model", obj.GetModelMatrix());
 
-                shader.SetVector3("inColor", obj.material.color);
                 obj.material.Render(shader);
+                
                 obj.mesh.Render();
             }
         }

@@ -24,11 +24,10 @@ namespace GameEngine
         int width, height;
         public RigidbodyTest(int width, int height) : base(GameWindowSettings.Default, NativeWindowSettings.Default)
         {
-            //this.WindowState = WindowState.Fullscreen;
             this.width = width;
             this.height = height;
             this.CenterWindow(new Vector2i(width, height));
-
+            //this.WindowState = WindowState.Fullscreen;
         }
 
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)

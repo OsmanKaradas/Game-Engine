@@ -21,7 +21,7 @@ namespace GameEngine.Graphics
             BindTexture(TextureTarget.TextureCubeMap, depthCubeMap);
             for (int i = 0; i < 6; i++)
             {
-                TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent24, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, 0);          
+                TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.DepthComponent, width, height, 0, PixelFormat.DepthComponent, PixelType.Float, 0);          
             }
 
             TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);

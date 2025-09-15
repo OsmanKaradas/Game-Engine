@@ -6,6 +6,7 @@ in vec2 uv;
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
+uniform sampler2D gAlbedo;
 uniform sampler2D gMaterial;
 uniform sampler2D gDepth;
 uniform sampler2D depthMap;
@@ -154,7 +155,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 normal, vec3 inViewDir, v
     
     float theta = dot(lightDir, normalize(-light.direction));
     float epsilon = light.innerCone - light.outerCone;
-    float intensity = clamp((theta - light.outerCone) / epsilon, 0.0, 1.0);
+    float intensity = smoothstep(0.0, 1.0, (theta - light.outerCone) / epsilon);
 
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (1.0 + light.linear * distance + light.quadratic * (distance * distance));
@@ -175,13 +176,13 @@ void main()
 {
     vec3 FragPos = texture(gPosition, uv).rgb;
     vec3 Normal  = texture(gNormal, uv).rgb;
-    vec3 Diffuse = texture(gMaterial, uv).rgb;
-    float Specular = texture(gMaterial, uv).a;
+    vec3 Diffuse = texture(gAlbedo, uv).rgb;
+    float Specular = texture(gMaterial, uv).r;
 
     vec3 viewDir = normalize(viewPos - FragPos);
     
     // ambient
-    vec3 lighting = Diffuse * 0.1f;
+    vec3 lighting = Diffuse * 0.3f;
 
     lighting += CalcDirectionalLight(FragPos, Normal, viewDir, Diffuse, Specular);
 
