@@ -5,6 +5,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using GameEngine.World;
 
 namespace GameEngine
 {
@@ -18,6 +19,7 @@ namespace GameEngine
         }
         public Mode mode = Mode.Default;
 
+        private GameWindow window;
         public float speed = 8f;
         public float screenWidth;
         public float screenHeight;
@@ -34,12 +36,19 @@ namespace GameEngine
         public float pitch = 0f;
         public float yaw = -90.0f;
 
-        public Camera(float screenWidth, float screenHeight, Vector3 position, float sensitivity)
+        public Vector3 target;
+        public GameObject player = null!;
+        private float distance = 10f;
+        public Camera(GameWindow window, float screenWidth, float screenHeight, Vector3 position, float sensitivity)
         {
+            this.window = window;
             this.screenWidth = screenWidth;
             this.screenHeight = screenHeight;
             this.position = position;
             this.sensitivity = sensitivity;
+            
+            mode = Mode.Default;
+            window.CursorState = CursorState.Grabbed;
         }
 
         public Matrix4 GetViewMatrix()
@@ -60,6 +69,15 @@ namespace GameEngine
                 if (pitch > 89.0f) pitch = 89.0f;
                 // down
                 if (pitch < -89.0f) pitch = -89.0f;
+
+                front.X = MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Cos(MathHelper.DegreesToRadians(yaw));
+                front.Y = MathF.Sin(MathHelper.DegreesToRadians(pitch));
+                front.Z = MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Sin(MathHelper.DegreesToRadians(yaw));
+
+                front = Vector3.Normalize(front);
+
+                right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
+                up = Vector3.Normalize(Vector3.Cross(right, front));
             }
             else if (mode == Mode.LookAround)
             {
@@ -67,18 +85,29 @@ namespace GameEngine
                 if (pitch > 10.0f) pitch = 10.0f;
                 // down
                 if (pitch < -30.0f) pitch = -30.0f;
+
+                // direction from target to camera
+                Vector3 offset;
+                offset.X = distance * MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Cos(MathHelper.DegreesToRadians(yaw));
+                offset.Y = distance * MathF.Sin(MathHelper.DegreesToRadians(pitch));
+                offset.Z = distance * MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Sin(MathHelper.DegreesToRadians(yaw));
+
+                if (player != null)
+                {
+                    target = player.position + new Vector3(-1.5f, 1.5f, 0f);
+                    position = target - offset;
+                    front = Vector3.Normalize(target - position);
+                }
+                else
+                {
+                    front = Vector3.Normalize(front);
+                }
+                
+                right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
+                up = Vector3.Normalize(Vector3.Cross(right, front));
             }
-
-            front.X = MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Cos(MathHelper.DegreesToRadians(yaw));
-            front.Y = MathF.Sin(MathHelper.DegreesToRadians(pitch));
-            front.Z = MathF.Cos(MathHelper.DegreesToRadians(pitch)) * MathF.Sin(MathHelper.DegreesToRadians(yaw));
-
-            front = Vector3.Normalize(front);
-
-            right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
-            up = Vector3.Normalize(Vector3.Cross(right, front));
         }
-        public void Update(GameWindow window, KeyboardState input, MouseState mouse, FrameEventArgs e)
+        public void Update(KeyboardState input, MouseState mouse, FrameEventArgs e)
         {
             UpdateVectors();
             float deltaTime = (float)e.Time;
@@ -122,30 +151,42 @@ namespace GameEngine
 
                     yaw += mouse.Delta.X * sensitivity * deltaTime;
                     pitch -= mouse.Delta.Y * sensitivity * deltaTime;
-                    window.CursorState = CursorState.Grabbed;
                     break;
 
                 case Mode.LookAround:
                     yaw += mouse.Delta.X * sensitivity * deltaTime;
                     pitch -= mouse.Delta.Y * sensitivity * deltaTime;
-                    window.CursorState = CursorState.Grabbed;
                     break;
 
                 case Mode.Locked:
-                    window.CursorState = CursorState.Normal;
                     break;
             }
 
+            // CHANGE MODE
             if (input.IsKeyDown(Keys.F))
             {
-                if (input.IsKeyPressed(Keys.D1)) { mode = Mode.Default; }
-                if (input.IsKeyPressed(Keys.D2)) { mode = Mode.LookAround; }
-                if (input.IsKeyPressed(Keys.D3)) { mode = Mode.Locked; }
+                if (input.IsKeyPressed(Keys.D1))
+                {
+                    mode = Mode.Default;
+                    window.CursorState = CursorState.Grabbed;
+                }
+
+                if (input.IsKeyPressed(Keys.D2))
+                {
+                    mode = Mode.LookAround;
+                    window.CursorState = CursorState.Grabbed;
+                }
+
+                if (input.IsKeyPressed(Keys.D3))
+                {
+                    mode = Mode.Locked;
+                    window.CursorState = CursorState.Normal;
+                }
             }
 
         }
 
-        public void SendRayCastFromScreen(GameWindow window, out Vector3 direction)
+        public void SendRayCastFromScreen(out Vector3 direction)
         {
             float x = (2f * window.MousePosition.X) / window.ClientSize.X - 1f;
             float y = 1f - (2f * window.MousePosition.Y) / window.ClientSize.Y;

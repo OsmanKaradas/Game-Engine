@@ -171,7 +171,6 @@ vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 normal, vec3 inViewDir, v
     return ((diffuse + specular) * intensity) * (1.0 - shadow);
 }
 
-
 void main()
 {
     vec3 FragPos = texture(gPosition, uv).rgb;

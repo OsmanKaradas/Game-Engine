@@ -91,7 +91,7 @@ namespace GameEngine
         {
             base.OnLoad();
             guiController = new ImGuiController(ClientSize.X, ClientSize.Y);
-            camera = new Camera(ClientSize.X, ClientSize.Y, new Vector3(0f, 0f, -3f), 10f);
+            camera = new Camera(this, ClientSize.X, ClientSize.Y, new Vector3(0f, 0f, -3f), 10f);
             physics = new JoltPhysics();
 
             geometryPass = new GeometryPass("GeometryPass/GeometryPass.vert", "GeometryPass/GeometryPass.frag", ClientSize.X, ClientSize.Y);
@@ -106,7 +106,8 @@ namespace GameEngine
             
             cubeMesh = new Mesh(World.Type.Cube);
             sphere = new Mesh(World.Type.Sphere);
-            GameObject cube = new(cubeMesh, new(-5f, 0f, 0f), Quaternion.Identity, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Dynamic));
+            GameObject cube = new(cubeMesh, new(-5f, 0f, 0f), Quaternion.Identity, Vector3.One, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Dynamic));
+            /*
             GameObject ground = new GameObject(cubeMesh, new Vector3(0f, -5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(20f, 1f, 20f));
             GameObject top = new GameObject(cubeMesh, new Vector3(0f, 25f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(20f, 1f, 20f));
             
@@ -129,7 +130,7 @@ namespace GameEngine
 
             Mesh capsule = new Mesh("capsule.glb");
             GameObject playerObject = new GameObject(capsule, new Vector3(0f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)));
-            player = new(playerObject, new CapsuleShape(new(1.8f, 0.9f)), 60f, camera, physics);
+            player = new(playerObject, new CapsuleShape(new(1.8f, 0.9f)), 60f, camera, physics);*/
 
             Enable(EnableCap.DepthTest);
         }
@@ -182,7 +183,7 @@ namespace GameEngine
             Time.Update(args.Time);
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
             GameObject.Update();
-            camera.Update(this, keyboardInput, mouseInput, args);
+            camera.Update(keyboardInput, mouseInput, args);
             if (camera.mode == Camera.Mode.LookAround)
             {
                 player.Update(keyboardInput);
@@ -197,7 +198,7 @@ namespace GameEngine
 
             if (keyboardInput.IsKeyDown(Keys.D0))
             {
-                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, 5f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
+                GameObject cube = new GameObject(cubeMesh, new Vector3(0f, 5f, 0f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
             }
 
             if (camera.mode == Camera.Mode.Locked)
@@ -205,7 +206,7 @@ namespace GameEngine
                 if (mouseInput.IsButtonPressed(MouseButton.Left))
                 {
                     Vector3 direction;
-                    camera.SendRayCastFromScreen(this, out direction);
+                    camera.SendRayCastFromScreen(out direction);
 
                     Ray ray = new(new(camera.position.X, camera.position.Y, camera.position.Z), new System.Numerics.Vector3(direction.X, direction.Y, direction.Z) * 100f);
 

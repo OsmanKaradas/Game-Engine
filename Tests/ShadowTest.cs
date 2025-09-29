@@ -49,7 +49,7 @@ namespace GameEngine
         protected override void OnLoad()
         {
             base.OnLoad();
-            camera = new(ClientSize.X, ClientSize.Y, new Vector3(0f, 0f, -3f), 40f);
+            camera = new(this, ClientSize.X, ClientSize.Y, new Vector3(0f, 0f, -3f), 40f);
             physics = new JoltPhysics();
 
             geometryPass = new("GeometryPass/GeometryPass.vert", "GeometryPass/GeometryPass.frag", ClientSize.X, ClientSize.Y);
@@ -60,7 +60,7 @@ namespace GameEngine
             Light.camera = camera;
             DirectionalLight directionalLight = new(new(0.75f, 0.75f, 0.75f), new Vector3(-0.45f, -0.625f, -0.75f));
             //PointLight pointLight = new(new(1f, 0.5f, 0.2f), new(0f, 5f, 2f));
-            SpotLight spotLight = new(new(1f, 1f, 1f), new(0f, 5f, 0f), new(0f, -1f, 0f));
+            SpotLight spotLight = new(new(1f, 0.5f, 0.2f), new(0f, 5f, 0f), new(0f, -1f, 0f));
 
             guiController = new(ClientSize.X, ClientSize.Y);
 
@@ -69,15 +69,16 @@ namespace GameEngine
             Mesh dummyMesh = new("dummy2.glb");
             Mesh spiderMesh = new("spider.glb");
             Mesh creatureMesh = new("creature.glb");
-        
-            GameObject ground = new(cube, new Vector3(0f, -3.4f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(20f, 1f, 20f));
-            GameObject wall = new(cube, new Vector3(0f, 0f, -4f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic), new Vector3(20f, 10f, 1f));
-            GameObject cubeObj = new(cube, new Vector3(0f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
-            GameObject dummy = new(dummyMesh, new Vector3(5f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic), new(0.5f, 0.5f, 0.5f));
-            GameObject spider = new(spiderMesh, new Vector3(-5f, 0f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic), new(0.85f, 0.85f, 0.85f));
-            GameObject creature = new(creatureMesh, new Vector3(-5f, 0f, 10f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f), null, new("Skin/Skin(Diffuse).png", TextureUnit.Texture1)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic), new(1.5f, 1.5f, 1.5f));
-            lightObj = new(sphere, new(0f, 5f, 2f), Quaternion.Identity, new(new(0.5f, 0f, 0f)), new(physics, Rigidbody.BodyType.Sphere, MotionType.Kinematic), new(0.25f, 0.25f, 0.25f));
+
+            GameObject ground = new(cube, new Vector3(0f, -3.4f, 0f), Quaternion.Identity, new Vector3(20f, 1f, 20f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static));
+            GameObject wall = new(cube, new Vector3(0f, 0f, -4f), Quaternion.Identity, new Vector3(20f, 10f, 1f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject cubeObj = new(cube, new Vector3(0f, 0f, 0f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
+            GameObject dummy = new(dummyMesh, new Vector3(5f, 0f, 0f), Quaternion.Identity, new(0.5f, 0.5f, 0.5f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject spider = new(spiderMesh, new Vector3(-5f, 0f, 0f), Quaternion.Identity, new(0.85f, 0.85f, 0.85f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject creature = new(creatureMesh, new Vector3(-5f, 0f, 10f), Quaternion.Identity, new(1.5f, 1.5f, 1.5f), new Material(new Vector3(1f, 1f, 1f), null, "Skin/Skin(Diffuse).png"), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            lightObj = new(sphere, new(0f, 5f, 2f), Quaternion.Identity, new(0.25f, 0.25f, 0.25f), new(new(0.5f, 0f, 0f)), new(physics, Rigidbody.BodyType.Sphere, MotionType.Kinematic));
             Enable(EnableCap.DepthTest);
+            Enable(EnableCap.Multisample);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -122,7 +123,7 @@ namespace GameEngine
 
             Time.Update(args.Time);
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
-            camera.Update(this, keyboardInput, mouseInput, args);
+            camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
 
             if (keyboardInput.IsKeyPressed(Keys.Escape))
@@ -132,7 +133,7 @@ namespace GameEngine
 
             if (keyboardInput.IsKeyDown(Keys.D0))
             {
-                GameObject cubeObj = new(cube, new Vector3(0f, 50f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
+                GameObject cubeObj = new(cube, new Vector3(0f, 50f, 0f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
             }
 
             if (camera.mode == Camera.Mode.Locked)
@@ -140,7 +141,7 @@ namespace GameEngine
                 if (mouseInput.IsButtonPressed(MouseButton.Left))
                 {
                     Vector3 direction;
-                    camera.SendRayCastFromScreen(this, out direction);
+                    camera.SendRayCastFromScreen(out direction);
 
                     Ray ray = new(new(camera.position.X, camera.position.Y, camera.position.Z), new System.Numerics.Vector3(direction.X, direction.Y, direction.Z) * 100f);
 

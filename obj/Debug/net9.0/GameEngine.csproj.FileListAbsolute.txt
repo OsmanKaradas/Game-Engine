@@ -88,3 +88,7 @@
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-arm64/native/cimgui.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x64/native/cimgui.dll
 /Users/osmankaradas/GameEngine/bin/Debug/net9.0/runtimes/win-x86/native/cimgui.dll
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/quad.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/quad.vert
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/rig.frag
+/Users/osmankaradas/GameEngine/bin/Debug/net9.0/Shaders/rig.vert

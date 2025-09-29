@@ -15,6 +15,13 @@ namespace GameEngine.Graphics
             BufferData(BufferTarget.ArrayBuffer, data.Count * sizeof(float), data.ToArray(), BufferUsageHint.StaticDraw);
         }
 
+        public VBO(List<int> data)
+        {
+            ID = GenBuffer();
+            Bind();
+            BufferData(BufferTarget.ArrayBuffer, data.Count * sizeof(int), data.ToArray(), BufferUsageHint.StaticDraw);
+        }
+        
         public void Bind()
         {
             BindBuffer(BufferTarget.ArrayBuffer, ID);

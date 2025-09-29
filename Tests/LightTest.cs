@@ -16,23 +16,21 @@ namespace GameEngine
     {
         JoltPhysics physics = null!;
         ShaderProgram shader = null!;
+        ShaderProgram shadowShader = null!;
 
         Mesh cube = null!;
-        Mesh capsule = null!;
         Camera camera = null!;
 
         Player player = null!;
         BodyID selectedBody = 0;
 
-        GameObject pointLightObj = null!;
-        GameObject spotLightObj = null!;
-        Vector3 lightDir = new(0.45f, -0.625f, 0.75f);
-        Vector3 lightPos = new(0f, 5f, 0f);
+        ShadowFBO shadowFBO = null!;
+        Quad quad = null!;
 
-        ImGuiController guiController = null!;
-
+        int width; int height;
         public LightTest(int width, int height) : base(GameWindowSettings.Default, NativeWindowSettings.Default)
         {
+            this.width = width; this.height = height;
             Viewport(0, 0, width, height);
             this.CenterWindow(new Vector2i(width, height));
             WindowState = WindowState.Fullscreen;
@@ -41,74 +39,81 @@ namespace GameEngine
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
         {
             base.OnFramebufferResize(e);
-            Console.WriteLine(e.Width + ", " + e.Height);
-
-            Viewport(0, 0, e.Width, e.Height);
+            width = e.Width; height = e.Height;
+            Viewport(0, 0, width, height);
 
             if (camera != null)
-            { camera.screenWidth = e.Width; camera.screenHeight = e.Height; }
+            { camera.screenWidth = width; camera.screenHeight = height; }
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
 
-            camera = new(ClientSize.X, ClientSize.Y, new Vector3(0f, 0f, -3f), 40f);
+            camera = new(this,width, height, new Vector3(0f, 0f, -3f), 40f);
             physics = new();
 
             shader = new("test.vert", "test.frag");
+            shadowShader = new("ShadowPass/ShadowPass.vert", "ShadowPass/ShadowPass.frag");
 
-            guiController = new(ClientSize.X, ClientSize.Y);
+            UseProgram(shader.ID);
+            shader.SetInt("depthMap", 0);
+
+            Light.shader = shader;
+            Light.camera = camera;
+
+            DirectionalLight directionalLight = new(new(0.75f, 0.75f, 0.75f), new(0.45f, -0.625f, 0.75f));
+
+            shadowFBO = new();
+            quad = new();
 
             cube = new(World.Type.Cube);
-            capsule = new("capsule.glb");
-            Mesh sphere = new(World.Type.Sphere);
-            Mesh dummy = new("dummy2.glb");
 
-            GameObject ground = new(cube, new Vector3(0f, -4f, 0f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new Vector3(100f, 1f, 100f));
-            GameObject wall = new(cube, new Vector3(0f, 0f, 10f), Quaternion.Identity, new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic), new Vector3(20f, 10f, 1f));
+            GameObject ground = new(cube, new Vector3(0f, -4f, 0f), Quaternion.Identity, new(30f, 1, 30f), new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static));
+            GameObject wall = new(cube, new Vector3(0f, 0f, 10f), Quaternion.Identity, new(20f, 10f, 1f), new Material(new Vector3(1f, 1f, 1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject playerObject = new(new("capsule.glb"), new(0f, 0f, 0f), Quaternion.Identity, Vector3.One, new(new(0f, 0f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
+            GameObject dummy = new(new("dummy2.glb"), new(-5f, 0f, 0f), Quaternion.Identity, new(0.5f, 0.5f, 0.5f), new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
+            GameObject bench = new(cube, new Vector3(-5f, -3f, -2f), Quaternion.Identity, Vector3.One, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
 
-            GameObject playerObject = new(capsule, new(0f, 0f, 0f), Quaternion.Identity, new(new(0f, 0f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
-            player = new(playerObject, new CapsuleShape(new(1.8f, 0.9f)), 60f, camera, physics);
-
-            GameObject dummyObject = new(dummy, new(-5f, 0f, 0f), new(0f, 1f, 0f, 0f), new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic), new(0.5f, 0.5f, 0.5f));
-            GameObject bench = new(cube, new Vector3(-5f, -3f, -2f), Quaternion.Identity, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
-
-            pointLightObj = new(sphere, new(0f, 5f, -2f), Quaternion.Identity, new(new(0f, 0f, 0f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic), new(0.25f, 0.25f, 0.25f));
-            spotLightObj = new(sphere, new(0f, 5f, -2f), Quaternion.Identity, new(new(1f, 0.5f, 0.25f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic), new(0.25f, 0.25f, 0.25f));
-
+            player = new(dummy, new CapsuleShape(new(1.8f, 0.9f)), 60f, camera, physics);
+            camera.player = player.gameObject;
             Enable(EnableCap.DepthTest);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
+            ClearColor(0.85f, 0.85f, 0.9f, 1.0f);
+            Viewport(0, 0, shadowFBO.width, shadowFBO.height);            
+            shadowFBO.Bind();
+            Clear(ClearBufferMask.DepthBufferBit);
+            Enable(EnableCap.CullFace);
+            CullFace(TriangleFace.Front);
+
+            UseProgram(shadowShader.ID);
+            Matrix4 shadowProjection = Matrix4.CreateOrthographic(35f, 35f, 0.1f, 75.0f);
+            Matrix4 shadowView = Matrix4.LookAt(35f * -Light.directionalLight.direction, Vector3.Zero, new(0f, 1f, 0f));
+            Matrix4 lightProjection = shadowView * shadowProjection;
+            shadowShader.SetMatrix4("lightSpaceMatrix", lightProjection);
+
+            GameObject.Render(shadowShader);
+
+            shadowFBO.Unbind();
+            CullFace(TriangleFace.Back);
+            Disable(EnableCap.CullFace);
+            
+            Viewport(0, 0, width, height);
             Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
+            shader.Render(camera);
             shader.SetVector3("viewPos", camera.position);
             shader.SetFloat("ambientStrength", 0.3f);
+            shader.SetMatrix4("lightProjection", lightProjection);
+            
+            ActiveTexture(TextureUnit.Texture0);
+            BindTexture(TextureTarget.Texture2D, shadowFBO.depthMap);
 
-            shader.SetVector3("directionalLight.color", new(0.75f, 0.75f, 0.75f));
-            shader.SetVector3("directionalLight.direction", lightDir);
-
-
-            shader.SetVector3("pointLight.color", pointLightObj.material.color);
-            shader.SetVector3("pointLight.position", pointLightObj.position);
-            shader.SetFloat("pointLight.linear", 0.045f);
-            shader.SetFloat("pointLight.quadratic", 0.0075f);
-
-
-            shader.SetVector3("spotLight.color", spotLightObj.material.color);
-            shader.SetVector3("spotLight.position", spotLightObj.position);
-            shader.SetVector3("spotLight.direction", new(0f, -1f, 0f));
-            shader.SetFloat("spotLight.linear", 0.09f);
-            shader.SetFloat("spotLight.quadratic", 0.032f);
-            shader.SetFloat("spotLight.innerCone", MathF.Cos(MathHelper.DegreesToRadians(15.5f)));
-            shader.SetFloat("spotLight.outerCone", MathF.Cos(MathHelper.DegreesToRadians(20.5f)));
-
-            shader.Render(camera);
             GameObject.Render(shader);
-
-            shader.Render(camera);
+            Light.RenderLights();
 
             SwapBuffers();
             base.OnRenderFrame(args);
@@ -122,7 +127,7 @@ namespace GameEngine
 
             Time.Update(args.Time);
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
-            camera.Update(this, keyboardInput, mouseInput, args);
+            camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
 
             if (camera.mode == Camera.Mode.LookAround)
@@ -132,7 +137,7 @@ namespace GameEngine
 
             if (keyboardInput.IsKeyDown(Keys.D0))
             {
-                GameObject cubeObj = new(cube, new(0f, 25f, 0f), Quaternion.Identity, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Dynamic));
+                GameObject cubeObj = new(cube, new(0f, 25f, 0f), Quaternion.Identity, Vector3.One, new(new(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Dynamic));
             }
 
             if (keyboardInput.IsKeyPressed(Keys.Escape))
@@ -145,7 +150,7 @@ namespace GameEngine
                 if (mouseInput.IsButtonPressed(MouseButton.Left))
                 {
                     Vector3 direction;
-                    camera.SendRayCastFromScreen(this, out direction);
+                    camera.SendRayCastFromScreen(out direction);
 
                     Ray ray = new(new(camera.position.X, camera.position.Y, camera.position.Z), new System.Numerics.Vector3(direction.X, direction.Y, direction.Z) * 100f);
 
@@ -166,6 +171,8 @@ namespace GameEngine
                 if (keyboardInput.IsKeyDown(Keys.A)) { force.X += 1f; }
                 if (keyboardInput.IsKeyDown(Keys.S)) { force.Z -= 1f; }
                 if (keyboardInput.IsKeyDown(Keys.D)) { force.X -= 1f; }
+                if (keyboardInput.IsKeyDown(Keys.Space)) { force.Y += 1f; }
+                if (keyboardInput.IsKeyDown(Keys.LeftShift)) { force.Y -= 1f; }
 
 
                 System.Numerics.Vector3 position = physics.BodyInterface.GetPosition(selectedBody) + force * 5f * Time.deltaTime;

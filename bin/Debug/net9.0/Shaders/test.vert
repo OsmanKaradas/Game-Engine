@@ -6,14 +6,19 @@ layout(location = 2) in vec2 aUV;
 
 out vec3 fragPos;
 out vec3 normal;
+out vec2 uv;
+out vec4 fragPosLight;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightProjection;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0f);
-    normal = normalize(mat3(transpose(inverse(model))) * aNormal);
     fragPos = vec3(model * vec4(aPos, 1.0));
+    normal = normalize(mat3(transpose(inverse(model))) * aNormal);
+    uv = aUV;
+    fragPosLight = lightProjection * vec4(fragPos, 1.0f);
 }

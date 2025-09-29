@@ -33,19 +33,19 @@ namespace GameEngine
         protected override void OnFramebufferResize(FramebufferResizeEventArgs e)
         {
             base.OnFramebufferResize(e);
-            Viewport(0, 0, e.Width, e.Height);
-
             width = e.Width;
             height = e.Height;
 
+            Viewport(0, 0, width, height);
+
             if (camera != null)
-            { camera.screenWidth = e.Width; camera.screenHeight = e.Height; }
+            { camera.screenWidth = width; camera.screenHeight = height; }
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
-            camera = new Camera(ClientSize.X, ClientSize.Y, new Vector3(0f, 0f, -3f), 40f);
+            camera = new Camera(this, width, height, new Vector3(0f, 0f, -3f), 40f);
             physics = new JoltPhysics();
 
             shader = new ShaderProgram("test.vert", "test.frag");
@@ -54,8 +54,8 @@ namespace GameEngine
             rigidbody.Initialize(new Vector3(0f, 0f, 0f), Quaternion.Identity, new Vector3(1f, 1f, 1f));
 
             cube = new Mesh(World.Type.Cube);
-            GameObject ground = new(cube, new(0f, -5f, 0f), Quaternion.Identity, new(new(0.75f, 0.75f, 0.75f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static), new(20f, 1f, 20f));
-
+            GameObject ground = new(cube, new(0f, -5f, 0f), Quaternion.Identity, Vector3.One, new(new(0.75f, 0.75f, 0.75f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static));
+            ground.scale = new(20f, 1f, 20f);
             Enable(EnableCap.DepthTest);
         }
 
@@ -89,7 +89,7 @@ namespace GameEngine
 
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
             
-            camera.Update(this, keyboardInput, mouseInput, args);
+            camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
             
             if (keyboardInput.IsKeyPressed(Keys.Escape))

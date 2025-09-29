@@ -7,7 +7,7 @@ namespace GameEngine
     {
         static void Main(string[] args)
         {
-            ShadowTest game = new(1920, 1080);
+            RigTest game = new(960, 540);
             game.Run();
         }
     }

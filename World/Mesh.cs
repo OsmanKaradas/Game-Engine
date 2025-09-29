@@ -62,8 +62,11 @@ namespace GameEngine.World
             buffers.ibo.Bind();
 
             DrawElements(OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, meshData.Indices.Count, DrawElementsType.UnsignedInt, 0);
+
+            buffers.ibo.Bind();
             buffers.vao.Unbind();
         }
+        
         public static List<Vector3> CalculateSmoothNormals(List<Vector3> vertices, List<uint> indices)
         {
             List<Vector3> normals = new List<Vector3>(new Vector3[vertices.Count]);
@@ -118,7 +121,7 @@ namespace GameEngine.World
                 new Vector2(1f, 0f),
                 new Vector2(0f, 0f)
             };
-            
+
             return new MeshData(vertices, indices, uv, CalculateSmoothNormals(vertices, indices));
         }
 
@@ -186,7 +189,7 @@ namespace GameEngine.World
             var vertices = new List<Vector3>();
             var uv = new List<Vector2>();
             var indices = new List<uint>();
-
+            
             for (int y = 0; y <= rings; y++)
             {
                 float v = (float)y / rings;
@@ -271,6 +274,8 @@ namespace GameEngine.World
             var indices = new List<uint>();
             var normals = new List<Vector3>();
             var uvs = new List<Vector2>();
+            var bones = new List<Vector4i>();
+            var weights = new List<Vector4>();
 
             var mesh = model.LogicalMeshes[0];
 
@@ -279,6 +284,8 @@ namespace GameEngine.World
                 var positionAccessor = prim.GetVertexAccessor("POSITION");
                 var uvAccesor = prim.GetVertexAccessor("TEXCOORD_0");
                 var normalAccesor = prim.GetVertexAccessor("NORMAL");
+                var boneAccesor = prim.GetVertexAccessor("JOINTS_0");
+                var weightsAcessor = prim.GetVertexAccessor("WEIGHTS_0");
 
                 // Extract vertices
                 foreach (var pos in positionAccessor.AsVector3Array())
@@ -325,9 +332,24 @@ namespace GameEngine.World
                     if (indices[i] >= vertices.Count)
                         throw new InvalidDataException($"Index out of range in model '{filePath}': index {indices[i]} >= vertex count {vertices.Count}");
                 }
+                
+                if (boneAccesor != null && weightsAcessor != null)
+                {
+                    var jointsArray = boneAccesor.AsVector4Array();
+                    var weightsArray = weightsAcessor.AsVector4Array();
+
+                    for (int i = 0; i < jointsArray.Count; i++)
+                    {
+                        var j = jointsArray[i];
+                        var w = weightsArray[i];
+
+                        bones.Add(new Vector4i((int)j.X, (int)j.Y, (int)j.Z, (int)j.W));
+                        weights.Add(new Vector4(w.X, w.Y, w.Z, w.W));
+                    }
+                }
             }
 
-            return new MeshData(vertices, indices, uvs, normals);
+            return new MeshData(vertices, indices, uvs, normals, bones, weights);
         }
     }
 }

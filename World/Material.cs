@@ -18,23 +18,23 @@ namespace GameEngine.World
         public Texture metallicMap = null!;
         public Texture aoMap = null!;
 
-        public Material(Vector3 color, Texture? normalMap = null, Texture? albedoMap = null, Texture? roughnessMap = null, Texture? metallicMap = null, Texture? aoMap = null)
+        public Material(Vector3 color, string? normalMapFilePath = null, string? albedoMapFilePath = null, string? roughnessMapFilePath = null, string? metallicMapFilePath = null, string? aoMapFilePath = null)
         {
             this.color = color;
-            if (normalMap != null)
-                this.normalMap = normalMap;
+            if (normalMapFilePath != null)
+                this.normalMap = new(normalMapFilePath, TextureUnit.Texture0);
 
-            if (albedoMap != null)
-                this.albedoMap = albedoMap;
+            if (albedoMapFilePath != null)
+                this.albedoMap = new(albedoMapFilePath, TextureUnit.Texture1);
 
-            if (roughnessMap != null)
-                this.roughnessMap = roughnessMap;
+            if (roughnessMapFilePath != null)
+                this.roughnessMap = new(roughnessMapFilePath, TextureUnit.Texture2);
 
-            if (metallicMap != null)
-                this.metallicMap = metallicMap;
+            if (metallicMapFilePath != null)
+                this.metallicMap = new(metallicMapFilePath, TextureUnit.Texture3);
                 
-            if (aoMap != null)
-                this.aoMap = aoMap;
+            if (aoMapFilePath != null)
+                this.aoMap = new(aoMapFilePath, TextureUnit.Texture4);
         }
 
         public void Render(ShaderProgram shader)
@@ -44,58 +44,51 @@ namespace GameEngine.World
             shader.SetFloat("material.metallic", metallic);
             shader.SetFloat("material.ao", ao);
 
+            // Normal map
             if (normalMap != null)
             {
                 normalMap.Bind();
+                shader.SetInt("material.normalMap", (int)normalMap.unit - (int)TextureUnit.Texture0);
                 shader.SetBool("useNormalMap", true);
             }
-            else
-            {
-                shader.SetBool("useNormalMap", false);
-            }
+            else shader.SetBool("useNormalMap", false);
 
+            // Albedo map
             if (albedoMap != null)
             {
                 albedoMap.Bind();
                 shader.SetInt("material.albedoMap", (int)albedoMap.unit - (int)TextureUnit.Texture0);
                 shader.SetBool("useAlbedoMap", true);
             }
-            else
-            {
-                shader.SetBool("useAlbedoMap", false);
-            }
+            else shader.SetBool("useAlbedoMap", false);
 
+            // Roughness map
             if (roughnessMap != null)
             {
                 roughnessMap.Bind();
+                shader.SetInt("material.roughnessMap", (int)roughnessMap.unit - (int)TextureUnit.Texture0);
                 shader.SetBool("useRoughnessMap", true);
             }
-            else
-            {
-                shader.SetBool("useRoughnessMap", false);
-            }
+            else shader.SetBool("useRoughnessMap", false);
 
-
+            // Metallic map
             if (metallicMap != null)
             {
                 metallicMap.Bind();
+                shader.SetInt("material.metallicMap", (int)metallicMap.unit - (int)TextureUnit.Texture0);
                 shader.SetBool("useMetallicMap", true);
             }
-            else
-            {
-                shader.SetBool("useMetallicMap", false);
-            }
+            else shader.SetBool("useMetallicMap", false);
 
-
+            // AO map (fixed boolean name)
             if (aoMap != null)
             {
                 aoMap.Bind();
+                shader.SetInt("material.aoMap", (int)aoMap.unit - (int)TextureUnit.Texture0);
                 shader.SetBool("useAOMap", true);
             }
-            else
-            {
-                shader.SetBool("useAOMAP", false);
-            }
-        }
+            else shader.SetBool("useAOMap", false);
+}
+
     }
 }

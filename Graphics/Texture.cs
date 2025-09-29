@@ -40,7 +40,9 @@ namespace GameEngine.Graphics
 
         public void Unbind()
         {
-            ActiveTexture(0);
+            ActiveTexture(unit);
+            BindTexture(TextureTarget.Texture2D, 0);
+            ActiveTexture(TextureUnit.Texture0);
         }
 
         public void Delete()

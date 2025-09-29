@@ -18,28 +18,31 @@ namespace GameEngine.World
 
         public Material material;
         public Rigidbody rigidbody = null!;
-
+        public Armature armature = null!;
         public Vector3 worldMin;
         public Vector3 worldMax;
         public string tag = "";
 
         public static List<GameObject> gameObjects = new();
-        
-        public GameObject(Mesh mesh, Vector3 position, Quaternion rotation, Material material, Rigidbody? rigidbody = null, Vector3? scale = null)
+
+        public GameObject(Mesh mesh, Vector3 position, Quaternion rotation, Vector3 scale, Material material, Rigidbody? rigidbody = null, Armature? armature = null)
         {
             this.mesh = mesh;
             this.position = position;
             this.rotation = rotation;
-            this.scale = scale ?? Vector3.One;
+            this.scale = scale;
             this.material = material;
-
+    
             if (rigidbody != null)
             {
                 this.rigidbody = rigidbody;
-                Vector3 colliderSize = this.scale * mesh.size;
+                Vector3 colliderSize = scale * mesh.size;
                 rigidbody.Initialize(position, rotation, colliderSize);
             }
-            
+
+            if(armature != null)
+                this.armature = armature;
+
             gameObjects.Add(this);
         }
 
@@ -47,7 +50,7 @@ namespace GameEngine.World
         {
             return
                 Matrix4.CreateScale(scale) *
-                Matrix4.CreateFromQuaternion(new Quaternion(rotation.X, rotation.Y, rotation.Z, rotation.W)) *
+                Matrix4.CreateFromQuaternion(rotation) *
                 Matrix4.CreateTranslation(position);
         }
 
@@ -62,15 +65,25 @@ namespace GameEngine.World
 
                 shader.SetMatrix4("model", obj.GetModelMatrix());
 
+                if (obj.armature != null)
+                {
+                    obj.armature.Update(shader);
+                    shader.SetBool("useArmature", true);
+                }
+                else
+                {
+                    shader.SetBool("useArmature", false);
+                }
+
                 obj.material.Render(shader);
-                
+
                 obj.mesh.Render();
             }
         }
 
         public static void Update()
         {
-            foreach(GameObject obj in gameObjects)
+            foreach (GameObject obj in gameObjects)
                 obj.UpdateTransform();
         }
 
@@ -83,6 +96,7 @@ namespace GameEngine.World
 
             position = new Vector3(transform.ShapePositionCOM.X, transform.ShapePositionCOM.Y, transform.ShapePositionCOM.Z);
             rotation = new Quaternion(transform.ShapeRotation.X, transform.ShapeRotation.Y, transform.ShapeRotation.Z, transform.ShapeRotation.W);
+            
         }
 
         public static void Delete()
@@ -93,6 +107,7 @@ namespace GameEngine.World
                 obj.mesh.buffers.vbo.Delete();
                 obj.mesh.buffers.ibo.Delete();
             }
+            gameObjects.Clear();
         }
     }
 }

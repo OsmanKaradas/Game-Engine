@@ -27,12 +27,13 @@ namespace GameEngine.Graphics
             Viewport(0, 0, fbo.width, fbo.height);
 
             fbo.Bind();
+
             Clear(ClearBufferMask.DepthBufferBit);
             Enable(EnableCap.CullFace);
             CullFace(TriangleFace.Front);
 
             Matrix4 lightProjection = Matrix4.CreateOrthographic(35f, 35f, nearPlane, farPlane);
-            Matrix4 lightView = Matrix4.LookAt(35f * -Light.directionalLight.direction, Vector3.Zero, new Vector3(0f, 1f, 0f));
+            Matrix4 lightView = Matrix4.LookAt(35f * -Light.directionalLight.direction, Vector3.Zero, new(0f, 1f, 0f));
             lightSpaceMatrix = lightView * lightProjection;
 
             UseProgram(shader.ID);
