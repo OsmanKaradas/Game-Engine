@@ -1,57 +1,44 @@
-using SharpGLTF.Animations;
-using SharpGLTF.Schema2;
+
 using OpenTK.Mathematics;
 
 namespace GameEngine.Animation
 {
     public class AnimationClip
     {
-        private float duration;
-        private float currentTime;
-        private KeyFrame[] keyFrames;
-        private bool finished = false;
+        public float duration;
+        public KeyFrame[] keyFrames;
+
+        public bool loop = false;
 
         public AnimationClip(float duration, KeyFrame[] keyFrames)
         {
             this.duration = duration;
             this.keyFrames = keyFrames;
         }
-
-        public void UpdateAnimation()
-        {
-            if (finished)
-                return;
-
-            if (currentTime >= duration)
-            {
-                Console.WriteLine("Animation Finished!");
-                finished = true;
-                return;
-            }
-
-            currentTime += Time.deltaTime;
-        }
     }
 
     public class KeyFrame
     {
-        private float timeStamp;
-        private Dictionary<string, Matrix4> pose;
-        
-        public KeyFrame(float timeStamp, Dictionary<string, Matrix4> pose)
+        public float timeStamp;
+        public Dictionary<string, Vector3> positions = new();
+        public Dictionary<string, Quaternion> rotations = new();
+        public Dictionary<string, Vector3> scales = new();
+
+        public KeyFrame(float timeStamp, World.Armature armature)
         {
             this.timeStamp = timeStamp;
-            this.pose = pose;
+            var arr = armature.bones.ToArray();
+            for (int i = 0; i < armature.bones.Count; i++)
+            {
+                positions.Add(arr[i].Key, arr[i].Value.position);
+                rotations.Add(arr[i].Key, arr[i].Value.rotation);
+                scales.Add(arr[i].Key, arr[i].Value.scale);
+            }
         }
 
         protected float GetTimeStamp()
         {
             return timeStamp;
-        }
-
-        protected Dictionary<string, Matrix4> GetMap()
-        {
-            return pose;
         }
     }
 }

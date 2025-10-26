@@ -64,11 +64,6 @@ namespace GameEngine.Graphics
             };
             DrawBuffers(attachments.Length, attachments);
 
-            // Check completeness
-            var status = CheckFramebufferStatus(FramebufferTarget.Framebuffer);
-            if (status != FramebufferErrorCode.FramebufferComplete)
-                throw new Exception($"GBuffer incomplete: {status}");
-
             Unbind();
         }
         public FBO(int width, int height, int samples)

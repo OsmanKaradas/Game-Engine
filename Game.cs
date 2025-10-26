@@ -82,8 +82,8 @@ namespace GameEngine
             
             player = new GameObject(cubeMesh, new Vector3(0f, 55f, -5f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
 
-            Mesh testDummyMesh = new Mesh("test_dummy.glb");
-            GameObject testDummy = new GameObject(testDummyMesh, new Vector3(5f, 2f, 0f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
+            var dummyImport = SharpGLTF.Schema2.ModelRoot.Load("Models/dummyRig.glb");
+            GameObject testDummy = new GameObject(new(dummyImport.LogicalMeshes[0]), new Vector3(5f, 2f, 0f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 0.25f, 0.25f)), new Rigidbody(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
 
             for (int i = 0; i < 10; i++)
             {

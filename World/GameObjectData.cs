@@ -13,6 +13,7 @@ namespace GameEngine.World
         Sphere,
         Pyramid
     }
+
     public class Buffers
     {
         public VAO vao;
@@ -54,7 +55,7 @@ namespace GameEngine.World
             vbo = new VBO(vertexData);
 
             int stride = 8 * sizeof(float);
-            
+
             if (meshData.Weights.Count > 0)
             {
                 stride = 12 * sizeof(float);
@@ -73,13 +74,13 @@ namespace GameEngine.World
             VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
 
 
-            if(meshData.Weights.Count > 0)
+            if (meshData.Weights.Count > 0)
             {
                 // WEIGHTS
                 EnableVertexAttribArray(4);
-                VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, stride, 8 * sizeof(float));                    
+                VertexAttribPointer(4, 4, VertexAttribPointerType.Float, false, stride, 8 * sizeof(float));
             }
-            
+
             if (meshData.BoneIDs.Count > 0)
             {
                 // BONES
@@ -97,7 +98,7 @@ namespace GameEngine.World
                 EnableVertexAttribArray(3);
                 VertexAttribIPointer(3, 4, VertexAttribIntegerType.Int, 4 * sizeof(int), IntPtr.Zero);
             }
-            
+
             ibo = new IBO(meshData.Indices);
 
             vao.Unbind();

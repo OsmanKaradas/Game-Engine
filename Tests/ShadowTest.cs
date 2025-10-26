@@ -58,24 +58,24 @@ namespace GameEngine
 
             Light.shader = lightingPass.shader;
             Light.camera = camera;
-            DirectionalLight directionalLight = new(new(0.75f, 0.75f, 0.75f), new Vector3(-0.45f, -0.625f, -0.75f));
+            DirectionalLight directionalLight = new(new(0.75f, 0.75f, 0.75f), new Vector3(-0.45f, -0.625f, -0.75f), true);
             //PointLight pointLight = new(new(1f, 0.5f, 0.2f), new(0f, 5f, 2f));
-            SpotLight spotLight = new(new(1f, 0.5f, 0.2f), new(0f, 5f, 0f), new(0f, -1f, 0f));
+            SpotLight spotLight = new(new(1f, 0.5f, 0.2f), new(0f, 5f, 0f), new(0f, -1f, 0f), true);
 
             guiController = new(ClientSize.X, ClientSize.Y);
 
             cube = new(World.Type.Cube);
             Mesh sphere = new(World.Type.Sphere);
-            Mesh dummyMesh = new("dummy2.glb");
-            Mesh spiderMesh = new("spider.glb");
-            Mesh creatureMesh = new("creature.glb");
+            var dummyImport = SharpGLTF.Schema2.ModelRoot.Load("Models/dummyRig.glb");
+            var spiderImport = SharpGLTF.Schema2.ModelRoot.Load("Models/spider.glb");
+            var creatureImport = SharpGLTF.Schema2.ModelRoot.Load("Models/creature.glb");
 
             GameObject ground = new(cube, new Vector3(0f, -3.4f, 0f), Quaternion.Identity, new Vector3(20f, 1f, 20f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Static));
             GameObject wall = new(cube, new Vector3(0f, 0f, -4f), Quaternion.Identity, new Vector3(20f, 10f, 1f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
             GameObject cubeObj = new(cube, new Vector3(0f, 0f, 0f), Quaternion.Identity, Vector3.One, new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Dynamic));
-            GameObject dummy = new(dummyMesh, new Vector3(5f, 0f, 0f), Quaternion.Identity, new(0.5f, 0.5f, 0.5f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
-            GameObject spider = new(spiderMesh, new Vector3(-5f, 0f, 0f), Quaternion.Identity, new(0.85f, 0.85f, 0.85f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
-            GameObject creature = new(creatureMesh, new Vector3(-5f, 0f, 10f), Quaternion.Identity, new(1.5f, 1.5f, 1.5f), new Material(new Vector3(1f, 1f, 1f), null, "Skin/Skin(Diffuse).png"), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject dummy = new(new(dummyImport.LogicalMeshes[0]), new Vector3(5f, 0f, 0f), Quaternion.Identity, new(0.5f, 0.5f, 0.5f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject spider = new(new(spiderImport.LogicalMeshes[0]), new Vector3(-5f, 0f, 0f), Quaternion.Identity, new(0.85f, 0.85f, 0.85f), new Material(new Vector3(1f, 1f, 1f)), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
+            GameObject creature = new(new(creatureImport.LogicalMeshes[0]), new Vector3(-5f, 0f, 10f), Quaternion.Identity, new(1.5f, 1.5f, 1.5f), new Material(new Vector3(1f, 1f, 1f), null, "Skin/Skin(Diffuse).png"), new(physics, Rigidbody.BodyType.Box, JoltPhysicsSharp.MotionType.Kinematic));
             lightObj = new(sphere, new(0f, 5f, 2f), Quaternion.Identity, new(0.25f, 0.25f, 0.25f), new(new(0.5f, 0f, 0f)), new(physics, Rigidbody.BodyType.Sphere, MotionType.Kinematic));
             Enable(EnableCap.DepthTest);
             Enable(EnableCap.Multisample);

@@ -17,16 +17,23 @@ namespace GameEngine.World
         public Vector3 maxBounds;
         public Vector3 size;
 
-        public Mesh(string filePath)
+        public Mesh(SharpGLTF.Schema2.Mesh mesh)
         {
             minBounds = new Vector3(float.MaxValue);
             maxBounds = new Vector3(float.MinValue);
 
-            meshData = LoadGltfModel(filePath);
+            meshData = LoadGltfModel(mesh);
 
             buffers = new Buffers(meshData);
 
             size = maxBounds - minBounds;
+        }
+
+        public Mesh(List<Vector3> vertices, List<uint> indices, List<Vector2> uv, List<Vector3> normals, List<Vector4i> boneIDs, List<Vector4> weights)
+        {
+            meshData = new(vertices, indices, uv, normals, boneIDs, weights);
+
+            buffers = new(meshData);
         }
 
         public Mesh(Type type)
@@ -265,19 +272,15 @@ namespace GameEngine.World
             return new MeshData(vertices, indices, uv, CalculateSmoothNormals(vertices, indices));
         }
 
-        public MeshData LoadGltfModel(string filePath)
+        public MeshData LoadGltfModel(SharpGLTF.Schema2.Mesh mesh)
         {
             // Load the model
-            var model = ModelRoot.Load("Models/" + filePath);
-
             var vertices = new List<Vector3>();
             var indices = new List<uint>();
             var normals = new List<Vector3>();
             var uvs = new List<Vector2>();
             var bones = new List<Vector4i>();
             var weights = new List<Vector4>();
-
-            var mesh = model.LogicalMeshes[0];
 
             foreach (var prim in mesh.Primitives)
             {
@@ -330,7 +333,7 @@ namespace GameEngine.World
                 for (int i = 0; i < indices.Count; i++)
                 {
                     if (indices[i] >= vertices.Count)
-                        throw new InvalidDataException($"Index out of range in model '{filePath}': index {indices[i]} >= vertex count {vertices.Count}");
+                        throw new InvalidDataException($"Index out of range in model '{mesh.Name}': index {indices[i]} >= vertex count {vertices.Count}");
                 }
                 
                 if (boneAccesor != null && weightsAcessor != null)

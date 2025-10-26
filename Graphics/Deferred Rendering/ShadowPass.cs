@@ -10,7 +10,7 @@ namespace GameEngine.Graphics
     {
         public ShaderProgram shader;
         public ShadowFBO fbo;
-        public ShadowCubeMapFBO cubeMapFBO = null!;
+        public ShadowFBOCubeMap cubeMapFBO = null!;
         public Matrix4 lightSpaceMatrix;
 
         public float nearPlane = 1f, farPlane = 75f;

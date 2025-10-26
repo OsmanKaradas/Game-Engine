@@ -57,7 +57,8 @@ namespace GameEngine.World
         public static void Render(ShaderProgram shader)
         {
             if (gameObjects.Count == 0)
-                Console.WriteLine("There are no gameobjects to render!");
+                return;
+                
             foreach (GameObject obj in gameObjects)
             {
                 if (obj.position.Y < -50f)

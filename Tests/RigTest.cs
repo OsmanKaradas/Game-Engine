@@ -14,18 +14,14 @@ namespace GameEngine
     {
         ShaderProgram shader = null!;
         ShaderProgram debugShader = null!;
-
+        
         Camera camera = null!;
+        World.Mesh mesh = null!;
         GameObject dummy = null!;
-        GameObject bowl = null!;
-        GameObject rigTest = null!;
+        Armature armature = null!;
+        Animator animator = null!;
 
-        AnimationClip animation = null!;
-
-        int idxCount = 0;
-        VAO vao = null!;
-        VBO vbo = null!;
-        IBO ibo = null!;
+        int debugVao, debugVbo;
 
         int width; int height;
         public RigTest(int width, int height) : base(GameWindowSettings.Default, NativeWindowSettings.Default)
@@ -55,43 +51,31 @@ namespace GameEngine
             shader = new("rig.vert", "rig.frag");
             debugShader = new("Debug/debug.vert", "Debug/debug.frag");
 
-            Mesh dummyMesh = new("dummyRig.glb");
-            Mesh bowlMesh = new("bowl.glb");
-            Mesh rigTestMesh = new("rigTest.glb");
+            GL.GenVertexArrays(1, out debugVao);
+            GL.GenBuffers(1, out debugVbo);
 
-            Mesh cubeMesh = new(World.Type.Cube);
+            GL.BindVertexArray(debugVao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, debugVbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, 2048 * Vector3.SizeInBytes, IntPtr.Zero, BufferUsageHint.DynamicDraw);
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.BindVertexArray(0);
 
-            MeshData sphere = Sphere(0.07f, 32, 16);
+            var scene = SharpGLTF.Schema2.ModelRoot.Load("Models/mixamoAnim.glb");
 
-            dummy = new(dummyMesh, new(0f, 0f, 0f), Quaternion.Identity, Vector3.One, new(new(1f, 0f, 0f)), null, new("dummyRig.glb"));
-            //bowl = new(bowlMesh, new(-12f, 0f, 0f), Quaternion.Identity, Vector3.One, new(new(1f, 0f, 0f)), null, new("bowl.glb"));
-            rigTest = new(rigTestMesh, new(14f, 0f, 0f), Quaternion.Identity, Vector3.One, new(new(1f, 0f, 0f)), null, new("rigTest.glb"));
+            World.Mesh dummyMesh = new(scene.LogicalMeshes[0]);
+            dummy = new(dummyMesh, new(0f, 0f, 0f), Quaternion.Identity, new(0.1f), new(new(0.3f, 0.3f, 0.3f)), null, new(scene.LogicalSkins[0]));
 
-            foreach (var bone in rigTest.armature.bones)
-            {
-                Console.WriteLine("INVERSE: " + bone.Value.name + ": " + bone.Value.offset);
-                Console.WriteLine("LOCAL: " + bone.Value.name + ": " + bone.Value.GetLocalMatrix());
-                Console.WriteLine("FINAL: " + bone.Value.name + ": " + bone.Value.finalMatrix);
-
-            }
-
-            foreach (var bone in rigTest.armature.bones)
-            {
-            }
-            GameObject cube = new(cubeMesh, new(-10f, 0f, 0f), Quaternion.Identity, Vector3.One, new(new(1f, 0f, 0f)));
-
-            vao = new();
-            vbo = new(sphere.Vertices.SelectMany(v => new float[]{ v.X, v.Y, v.Z }).ToList());
-
-            EnableVertexAttribArray(0);
-            VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            ibo = new(sphere.Indices);
-            idxCount = sphere.Indices.Count;
-
-            vbo.Unbind();
-            vao.Unbind();
+            animator = new(dummy.armature);
+            animator.AddAnimation(scene.LogicalAnimations[0]);
+            animator.AddAnimation(scene.LogicalAnimations[1]);
+            animator.animations["Idle"].loop = true;
+            animator.animations["Walk"].loop = true;
             
-            animation = new(2f, new KeyFrame[5]);
+            foreach (var anim in animator.animations)
+                Console.WriteLine(anim.Key);
+            animator.Play(animator.animations["Walk"]);
+
             Enable(EnableCap.DepthTest);
         }
 
@@ -100,25 +84,28 @@ namespace GameEngine
             Viewport(0, 0, width, height);
             Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
 
-            shader.Render(camera);
             shader.SetVector3("viewPos", camera.position);
+            shader.Render(camera);
             GameObject.Render(shader);
-
+            
             UseProgram(debugShader.ID);
             debugShader.SetMatrix4("projection", camera.GetProjectionMatrix());
             debugShader.SetMatrix4("view", camera.GetViewMatrix());
-            debugShader.SetVector3("inColor", new(0f, 0f, 1f));
+            debugShader.SetMatrix4("model", Matrix4.Identity);
+            debugShader.SetVector3("inColor", new(1, 0, 0));
 
-            vao.Bind();
-
-            foreach (var bone in dummy.armature.bones)
+            // Get bone lines
+            List<Vector3> lines = dummy.armature.GetBoneDebugLines();
+            if (lines.Count > 0)
             {
-                Vector3 position = bone.Value.finalMatrix.ExtractTranslation();
-                Matrix4 model = Matrix4.CreateTranslation(position);
-                debugShader.SetMatrix4("model", model);
-                DrawElements(PrimitiveType.Triangles, idxCount, DrawElementsType.UnsignedInt, 0);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, debugVbo);
+                GL.BufferData(BufferTarget.ArrayBuffer, lines.Count * Vector3.SizeInBytes, lines.ToArray(), BufferUsageHint.DynamicDraw);
+
+                GL.BindVertexArray(debugVao);
+                GL.DrawArrays(OpenTK.Graphics.OpenGL4.PrimitiveType.Lines, 0, lines.Count);
+                GL.BindVertexArray(0);
             }
-            
+
             SwapBuffers();
             base.OnRenderFrame(args);
         }
@@ -132,37 +119,16 @@ namespace GameEngine
             Time.Update(args.Time);
             camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
-            animation.UpdateAnimation();
+            animator.Update();
+
+            if (keyboardInput.IsKeyDown(Keys.P))
+            {
+                animator.Play(animator.animations.Values.First());
+            }
 
             if (keyboardInput.IsKeyPressed(Keys.Escape))
             {
                 Close();
-            }
-
-            float angle = 1.2f * Time.deltaTime;
-            string boneName = "High";
-            
-            if (keyboardInput.IsKeyDown(Keys.G))
-            {
-                var x = Quaternion.FromAxisAngle(Vector3.UnitX, angle);
-                rigTest.armature.bones[boneName].rotation = Quaternion.Normalize(x * rigTest.armature.bones[boneName].rotation);
-
-            }
-            if (keyboardInput.IsKeyDown(Keys.H))
-            {
-                var mX = Quaternion.FromAxisAngle(-Vector3.UnitX, angle);
-                rigTest.armature.bones[boneName].rotation = Quaternion.Normalize(mX * rigTest.armature.bones[boneName].rotation);
-            }
-
-            if (keyboardInput.IsKeyDown(Keys.J))
-            {
-                var z = Quaternion.FromAxisAngle(Vector3.UnitZ, angle);
-                rigTest.armature.bones[boneName].rotation = Quaternion.Normalize(z * rigTest.armature.bones[boneName].rotation);
-            }
-            if (keyboardInput.IsKeyDown(Keys.K))
-            {
-                var mZ = Quaternion.FromAxisAngle(-Vector3.UnitZ, angle);
-                rigTest.armature.bones[boneName].rotation = Quaternion.Normalize(mZ * rigTest.armature.bones[boneName].rotation);
             }
         }
         protected override void OnUnload()
@@ -173,58 +139,6 @@ namespace GameEngine
             GameObject.Delete();
         }
 
-        private MeshData Sphere(float radius, int segments, int rings)
-        {
-            var vertices = new List<Vector3>();
-            var normals = new List<Vector3>();
-            var uv = new List<Vector2>();
-            var indices = new List<uint>();
 
-            // Generate vertices
-            for (int y = 0; y <= rings; y++)
-            {
-                float v = (float)y / rings;
-                float theta1 = v * MathF.PI;
-
-                for (int x = 0; x <= segments; x++)
-                {
-                    float u = (float)x / segments;
-                    float theta2 = u * MathF.PI * 2f;
-
-                    float xPos = radius * MathF.Sin(theta1) * MathF.Cos(theta2);
-                    float yPos = radius * MathF.Cos(theta1);
-                    float zPos = radius * MathF.Sin(theta1) * MathF.Sin(theta2);
-
-                    var pos = new Vector3(xPos, yPos, zPos);
-                    vertices.Add(pos);
-
-                    // Normal = position normalized
-                    normals.Add(Vector3.Normalize(pos));
-
-                    // UVs
-                    uv.Add(new Vector2(u, v));
-                }
-            }
-
-            // Generate indices
-            for (int y = 0; y < rings; y++)
-            {
-                for (int x = 0; x < segments; x++)
-                {
-                    int first = y * (segments + 1) + x;
-                    int second = first + segments + 1;
-
-                    indices.Add((uint)first);
-                    indices.Add((uint)second);
-                    indices.Add((uint)(first + 1));
-
-                    indices.Add((uint)(first + 1));
-                    indices.Add((uint)second);
-                    indices.Add((uint)(second + 1));
-                }
-            }
-
-            return new MeshData(vertices, indices, uv, normals);
-        }
     }
 }

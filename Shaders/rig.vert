@@ -28,22 +28,32 @@ void main()
     {
         for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
         {
-            if(aBoneIDs[i] < 0) continue;
-            if(aBoneIDs[i] >= MAX_BONES) break;
+            if(aBoneIDs[i] == -1)
+            {
+                continue;
+            }
 
-            mat4 bone = finalBonesMatrices[aBoneIDs[i]];
-            skinnedPos    += (bone * vec4(aPos, 1.0)) * aWeights[i];
-            skinnedNormal += (mat3(bone) * aNormal) * aWeights[i];
+            if(aBoneIDs[i] >= MAX_BONES) 
+            {
+                skinnedPos = vec4(aPos, 1.0f);
+                skinnedNormal = mat3(transpose(inverse(model))) * aNormal;
+                break;
+            }
+
+            vec4 localPos = finalBonesMatrices[aBoneIDs[i]] * vec4(aPos, 1.0);
+            vec3 localNormal = mat3(finalBonesMatrices[aBoneIDs[i]]) * aNormal;
+            skinnedPos += localPos * aWeights[i];
+            skinnedNormal += localNormal * aWeights[i];
         }
     }
     else
     {
-        skinnedPos = vec4(aPos, 1.0);
-        skinnedNormal = aNormal;
+        skinnedPos = vec4(aPos, 1.0f);
+        skinnedNormal = mat3(transpose(inverse(model))) * aNormal;
     }
 
-    fragPos = vec3(model * skinnedPos);
-    normal  = normalize(mat3(model) * skinnedNormal);
+    fragPos = vec3(skinnedPos);
+    normal = normalize(skinnedNormal);
 
     gl_Position = projection * view * model * skinnedPos;
 }

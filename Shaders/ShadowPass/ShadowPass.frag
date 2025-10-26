@@ -1,16 +1,10 @@
 #version 330 core
-in vec4 FragPos;
+#define BIAS 0.001
 
-uniform vec3 lightPos;
-uniform float farPlane;
+in vec4 FragPos;
 
 void main()
 {
-    /*
-    float lightDistance = length(FragPos.xyz - lightPos);
-    
-    lightDistance = lightDistance / farPlane;
-    
-    gl_FragDepth = lightDistance;
-    */
+    gl_FragDepth = gl_FragCoord.z;
+    gl_FragDepth += gl_FrontFacing ? BIAS : 0.0;
 } 
