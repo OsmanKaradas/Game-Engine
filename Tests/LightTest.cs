@@ -24,7 +24,6 @@ namespace GameEngine
         Camera camera = null!;
 
         Player player = null!;
-        Animator animator = null!;
         BodyID selectedBody = 0;
         
         int width; int height;
@@ -54,26 +53,33 @@ namespace GameEngine
 
             shader = new("test.vert", "test.frag");
             shadowShader = new("ShadowPass/ShadowPass.vert", "ShadowPass/ShadowPass.frag");
-            shadowShaderCubeMap = new("ShadowPassCubeMap/ShadowPassCubeMap.vert", "ShadowPassCubeMap/ShadowPassCubeMap.frag", "ShadowPassCubeMap/ShadowPassCubeMap.geom");
+            //shadowShaderCubeMap = new("ShadowPassCubeMap/ShadowPassCubeMap.vert", "ShadowPassCubeMap/ShadowPassCubeMap.frag", "ShadowPassCubeMap/ShadowPassCubeMap.geom");
 
             DirectionalLight directionalLight = new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(-0.3f, 0.6f, -0.7f), true);
             //PointLight pointlight = new(new(1f, 0f, 0f), new(0f, 5f, 0f), false);
             //SpotLight spotLight = new(new(0f, 1f, 0f), new(10f, 10f, 0f), new(0f, -1f, 0f), true);
             //SpotLight spotLight1 = new(new(0f, 1f, 1f), new(-10f, 10f, 0f), new(0f, -1f, 0f), true);
             
-            Light.Setup(camera, shader, shadowShader, shadowShaderCubeMap);
+            Light.Setup(camera, shader, shadowShader);
 
             cubeMesh = new(World.Type.Cube);
-
+            
             var dummyImport = SharpGLTF.Schema2.ModelRoot.Load("Models/mixamoAnim.glb");
+            var faceImport = SharpGLTF.Schema2.ModelRoot.Load("Models/face.glb");
 
             GameObject ground = new(cubeMesh, new Vector3(0f, -4f, 0f), Quaternion.Identity, new(100f, 1, 100f), new(new Vector3(1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, MotionType.Static));
             GameObject wall = new(cubeMesh, new Vector3(0f, 1f, 10f), Quaternion.Identity, new(20f, 10f, 1f), new(new Vector3(1f)), new Rigidbody(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
             GameObject bench = new(cubeMesh, new Vector3(-5f, -3f, -2f), Quaternion.Identity, Vector3.One, new(new(1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic));
 
             GameObject dummy = new(new(dummyImport.LogicalMeshes[0]), new(-5f, -0.6f, 0f), Quaternion.Identity, new(0.03f), new(new(1f)), new(physics, Rigidbody.BodyType.Box, MotionType.Kinematic), new(dummyImport.LogicalSkins[0]));
+            GameObject face = new(new(faceImport.LogicalMeshes[0]), new(0f, 1.5f, 2f), new(0f, 1f, 0f, 0f), new(1f), new(new(1f)), null, new(faceImport.LogicalSkins[0]));
+            
+            /*Animator faceAnimator = new(face.armature);
+            faceAnimator.AddAnimation(faceImport.LogicalAnimations[0]);
+            faceAnimator.animations["test"].loop = true;
+            faceAnimator.Play(faceAnimator.animations["test"]);*/
 
-            animator = new(dummy.armature);
+            Animator animator = new(dummy.armature);
             animator.AddAnimation(dummyImport.LogicalAnimations[0]);
             animator.AddAnimation(dummyImport.LogicalAnimations[1]);
             animator.animations["Idle"].loop = true;
@@ -111,7 +117,7 @@ namespace GameEngine
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
             camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
-            animator.Update();
+            Animator.Update();
 
             if (camera.mode == Camera.Mode.LookAround)
             {
@@ -166,10 +172,9 @@ namespace GameEngine
         protected override void OnUnload()
         {
             base.OnUnload();
-
-            physics.Dispose();
             ShaderProgram.Delete();
             GameObject.Delete();
+            physics.Dispose();
         }
     }
 }

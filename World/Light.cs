@@ -91,20 +91,26 @@ namespace GameEngine.World
 
         public static void RenderShadows()
         {
-            UseProgram(shadowShader.ID);
-            if (directionalLight != null && directionalLight.useShadow)
-                directionalLight.RenderShadow();
-
-            UseProgram(shadowCubeMapShader.ID);
-            foreach (PointLight light in pointLights)
+            if(shadowShader != null)
             {
-                light.RenderShadow();
+                UseProgram(shadowShader.ID);
+                if (directionalLight != null && directionalLight.useShadow)
+                    directionalLight.RenderShadow();
+                
+                UseProgram(shadowShader.ID);
+                foreach (SpotLight light in spotLights)
+                {
+                    light.RenderShadow();
+                }
             }
             
-            UseProgram(shadowShader.ID);
-            foreach (SpotLight light in spotLights)
+            if(shadowCubeMapShader != null)
             {
-                light.RenderShadow();
+                UseProgram(shadowCubeMapShader.ID);
+                foreach (PointLight light in pointLights)
+                {
+                    light.RenderShadow();
+                }  
             }
         }
     }
@@ -122,7 +128,7 @@ namespace GameEngine.World
             if (useShadow)
                 shadowFBO = new();
                 
-            directionalLight = this;
+            Light.directionalLight = this;
         }
 
         public void RenderShadow()

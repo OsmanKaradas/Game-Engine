@@ -154,7 +154,7 @@ namespace GameEngine
             physics.System.Update(Time.deltaTime, 1, physics.JobSystem);
             camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
-            player.animator.Update();
+            Animator.Update();
 
             if (camera.mode == Camera.Mode.LookAround)
             {

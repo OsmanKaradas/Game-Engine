@@ -5,6 +5,7 @@ namespace GameEngine.Animation
 {
     public class Animator
     {
+        private static List<Animator> animators = new();
         public Dictionary<string, AnimationClip> animations = new();
         public AnimationClip currentClip = null!;
         private AnimationClip? nextClip = null;
@@ -21,64 +22,68 @@ namespace GameEngine.Animation
         {
             if (armature != null)
                 this.armature = armature;
+            animators.Add(this);
         }
-
-        public void Update()
+        
+        public static void Update()
         {
-            if (armature == null || currentClip == null)
-                return;
-
-            currentTime += Time.deltaTime;
-
-            // Handle looping or stopping
-            if (currentClip.loop)
-                currentTime %= currentClip.duration;
-            else if (currentTime >= currentClip.duration)
+            foreach(Animator a in animators)
             {
-                Stop();
-                return;
-            }
+                if (a.armature == null || a.currentClip == null)
+                    continue;
 
-            bool blending = nextClip != null;
+                a.currentTime += Time.deltaTime;
 
-            if (blending)
-            {
-                if (nextClip!.loop)
-                    nextClipTime %= nextClip.duration;
-                else if (nextClipTime >= nextClip.duration)
-                    nextClipTime = nextClip.duration;
-                blendTime += Time.deltaTime;
-                float blendFactor = Math.Clamp(blendTime / blendDuration, 0f, 1f);
-                blendFactor = blendFactor * blendFactor * (3f - 2f * blendFactor);
-                nextClipTime += Time.deltaTime;
-
-                SampleClip(currentClip, currentTime, out var pos1, out var rot1, out var scale1);
-                SampleClip(nextClip!, nextClipTime, out var pos2, out var rot2, out var scale2);
-
-                foreach (var bone in armature.bones)
+                // Handle looping or stopping
+                if (a.currentClip.loop)
+                    a.currentTime %= a.currentClip.duration;
+                else if (a.currentTime >= a.currentClip.duration)
                 {
-                    string name = bone.Key;
-                    bone.Value.position = Vector3.Lerp(pos1[name], pos2[name], blendFactor);
-                    bone.Value.rotation = Quaternion.Slerp(rot1[name], rot2[name], blendFactor);
-                    bone.Value.scale = Vector3.Lerp(scale1[name], scale2[name], blendFactor);
+                    a.Stop();
+                    continue;
                 }
 
-                if (blendFactor >= 1f)
+                bool blending = a.nextClip != null;
+
+                if (blending)
                 {
-                    currentClip = nextClip!;
-                    nextClip = null;
-                    currentTime = nextClipTime;
-                    blendTime = 0f;
+                    if (a.nextClip!.loop)
+                        a.nextClipTime %= a.nextClip.duration;
+                    else if (a.nextClipTime >= a.nextClip.duration)
+                        a.nextClipTime = a.nextClip.duration;
+                    a.blendTime += Time.deltaTime;
+                    float blendFactor = Math.Clamp(a.blendTime / a.blendDuration, 0f, 1f);
+                    blendFactor = blendFactor * blendFactor * (3f - 2f * blendFactor);
+                    a.nextClipTime += Time.deltaTime;
+
+                    a.SampleClip(a.currentClip, a.currentTime, out var pos1, out var rot1, out var scale1);
+                    a.SampleClip(a.nextClip!, a.nextClipTime, out var pos2, out var rot2, out var scale2);
+
+                    foreach (var bone in a.armature.bones)
+                    {
+                        string name = bone.Key;
+                        bone.Value.position = Vector3.Lerp(pos1[name], pos2[name], blendFactor);
+                        bone.Value.rotation = Quaternion.Slerp(rot1[name], rot2[name], blendFactor);
+                        bone.Value.scale = Vector3.Lerp(scale1[name], scale2[name], blendFactor);
+                    }
+
+                    if (blendFactor >= 1f)
+                    {
+                        a.currentClip = a.nextClip!;
+                        a.nextClip = null;
+                        a.currentTime = a.nextClipTime;
+                        a.blendTime = 0f;
+                    }
                 }
-            }
-            else
-            {
-                SampleClip(currentClip, currentTime, out var pos, out var rot, out var scale);
-                foreach (var bone in armature.bones)
+                else
                 {
-                    bone.Value.position = pos[bone.Key];
-                    bone.Value.rotation = rot[bone.Key];
-                    bone.Value.scale = scale[bone.Key];
+                    a.SampleClip(a.currentClip, a.currentTime, out var pos, out var rot, out var scale);
+                    foreach (var bone in a.armature.bones)
+                    {
+                        bone.Value.position = pos[bone.Key];
+                        bone.Value.rotation = rot[bone.Key];
+                        bone.Value.scale = scale[bone.Key];
+                    }
                 }
             }
         }

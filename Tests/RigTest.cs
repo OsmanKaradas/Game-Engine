@@ -119,7 +119,7 @@ namespace GameEngine
             Time.Update(args.Time);
             camera.Update(keyboardInput, mouseInput, args);
             GameObject.Update();
-            animator.Update();
+            Animator.Update();
 
             if (keyboardInput.IsKeyDown(Keys.P))
             {

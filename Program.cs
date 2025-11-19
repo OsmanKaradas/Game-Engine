@@ -4,7 +4,7 @@ namespace GameEngine
     {
         static void Main(string[] args)
         {
-            LightTest game = new(1920, 1080);
+            SkyboxTest game = new(1920, 1080);
             game.Run();
         }
     }

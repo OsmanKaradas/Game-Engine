@@ -39,14 +39,17 @@ namespace GameEngine.Graphics
             shaders.Add(this);
         }
 
-        public void Unbind()
+        public static void Unbind()
         {
             UseProgram(0);
         }
         public static void Delete()
         {
+            Unbind();
             foreach (ShaderProgram shader in shaders)
+            {
                 DeleteProgram(shader.ID);
+            }
         }
         public static string LoadShaderSource(string filePath)
         {

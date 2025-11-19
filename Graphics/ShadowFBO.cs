@@ -10,6 +10,7 @@ namespace GameEngine.Graphics
     {
         public int ID;
         public int depthMap = 0;
+        public long depthMapHandle;
         public int depthCubeMap = 0;
         public int width = 2048;
         public int height = 2048;
